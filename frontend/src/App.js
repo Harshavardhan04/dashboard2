@@ -29,6 +29,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Graph from './Components/Graph';
 import Sidebar from './Components/Sidebar';
 import Topbar from './Components/Topbar';
+import XVA_lchNotional from './Pages/XVA_lchNotional';
 
 import './App.css';
 
@@ -48,7 +49,7 @@ function App() {
           <div className="main-content">
             <Routes>
               <Route path="/" element={<Navigate to="/xva_view" />} />
-              <Route path="/xva_view" element={<Graph/>} />
+              <Route path="/xva_view" element={<XVA_lchNotional/>} />
               <Route path="/xva/burger" element={<div>Burger</div>} />
               <Route path="/xva/pizza" element={<div>Pizza</div>} />
               <Route path="/xva/sushi" element={<div>Sushi</div>} />
