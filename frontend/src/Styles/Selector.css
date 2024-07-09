@@ -1,0 +1,111 @@
+/* .currency-selector-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-button {
+    display: flex;
+    align-items: center;
+    background-color: #007bff;
+    color: #fff;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+  
+  .currency-selector-container:hover .dropdown-content {
+    display: block;
+  }
+  
+  .currency-selector-container:hover .dropdown-button {
+    background-color: #0056b3;
+  }
+  
+  .currency-list {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .currency-item {
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .currency-item input {
+    margin-right: 8px;
+  }
+   */
+   /* Dropdown container */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown button */
+.dropbtn {
+  background-color: #272222;
+  color: white;
+  padding: 5px 10px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  border: 1px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border: 1px solid white;
+  max-height: 200px; /* Added a max-height */
+  overflow-y: auto; /* Added to make content scrollable */
+}
+
+/* Show the dropdown content on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Currency item */
+.currency-item {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Highlight selected items */
+.currency-item.selected {
+  background-color: #f1f1f1;
+}
+
+/* Add a white border around the selection box */
+.currency-item:hover {
+  background-color: #ddd;
+}
+
+/* Input checkbox */
+.currency-item input {
+  margin-right: 10px;
+}
