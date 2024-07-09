@@ -1,0 +1,17 @@
+.currency-selector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.currency-selector label {
+  margin-right: 10px; /* Adjust this value as needed for spacing */
+  display: inline-block;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.currency-selector .selector {
+  flex-grow: 1;
+}
