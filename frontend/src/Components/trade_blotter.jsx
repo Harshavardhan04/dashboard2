@@ -15,20 +15,21 @@ const valuationFunctions = ['InterestRateSwap', 'BasisSwap', 'BasisSwapMTM2', 'I
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'trade_date', headerName: 'Trade Date', width: 150 },
-  { field: 'valuation_function', headerName: 'Valuation Function', width: 150 },
-  { field: 'dom_currency', headerName: 'Dom Currency', width: 150 },
-  { field: 'fgn_currency', headerName: 'Fgn Currency', width: 150 },
-  { field: 'index1', headerName: 'Index 1', width: 150 },
-  { field: 'index2', headerName: 'Index 2', width: 150 },
-  { field: 'level', headerName: 'Level', width: 150 },
-  { field: 'maturity', headerName: 'Maturity', width: 150 },
-  { field: 'risk', headerName: 'Risk', width: 150 },
-  { field: 'direction', headerName: 'Direction', width: 150 },
-  { field: 'cost', headerName: 'Cost(bps)', width: 150 },
-  { field: 'comment', headerName: 'Comment', width: 150 },
-  { field: 'nominal1', headerName: 'Nominal 1', width: 150 },
-  { field: 'nominal2', headerName: 'Nominal 2', width: 150 },
+  { field: 'TradeDate', headerName: 'Trade Date', width: 150 },
+  { field: 'ValuationFunction', headerName: 'Valuation Function', width: 150 },
+  { field: 'DomCurrency', headerName: 'Dom Currency', width: 150 },
+  { field: 'FgnCurrency', headerName: 'Fgn Currency', width: 150 },
+  { field: 'Index1', headerName: 'Index 1', width: 150 },
+  { field: 'Index2', headerName: 'Index 2', width: 150 },
+  { field: 'Level', headerName: 'Level', width: 150 },
+  { field: 'Maturity', headerName: 'Maturity', width: 150 },
+  { field: 'Risk', headerName: 'Risk', width: 150 },
+  { field: 'Direction', headerName: 'Direction', width: 150 },
+  { field: 'Cost(bps)', headerName: 'Cost(bps)', width: 150 },
+  { field: 'Comment', headerName: 'Comment', width: 150 },
+  { field: 'DatabaseID', headerName: 'Database ID', width: 150 },
+  { field: 'Nominal1', headerName: 'Nominal 1', width: 150 },
+  { field: 'Nominal2', headerName: 'Nominal 2', width: 150 },
 ];
 
 const ContainerStyled = styled(Container)({
@@ -98,21 +99,21 @@ const HeaderCell = styled('div')({
 
 const TradeForm = () => {
   const [formData, setFormData] = useState({
-    tradeDate: '',
-    valuationFunction: '',
-    domCurrency: '',
-    forCurrency: '',
-    index1: '',
-    index2: '',
-    level: '',
-    maturity: '',
-    riskUsd: '',
-    direction: '',
-    costBps: '',
-    comment: '',
-    databaseId: '',
-    nominal1: '',
-    nominal2: ''
+    TradeDate: '',
+    ValuationFunction: '',
+    DomCurrency: '',
+    FgnCurrency: '',
+    Index1: '',
+    Index2: '',
+    Level: '',
+    Maturity: '',
+    Risk: '',
+    Direction: '',
+    Cost: '',
+    Comment: '',
+    DatabaseID: '',
+    Nominal1: '',
+    Nominal2: ''
   });
   const [showForm, setShowForm] = useState(true);
   const [showTable, setShowTable] = useState(true);
@@ -180,8 +181,8 @@ const TradeForm = () => {
             <TextField
               label="Trade Date"
               type="date"
-              name="tradeDate"
-              value={formData.tradeDate}
+              name="TradeDate"
+              value={formData.TradeDate}
               onChange={handleChange}
               fullWidth
               margin="normal"
@@ -190,8 +191,8 @@ const TradeForm = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Valuation Function</InputLabel>
               <Select
-                name="valuationFunction"
-                value={formData.valuationFunction}
+                name="ValuationFunction"
+                value={formData.ValuationFunction}
                 onChange={handleChange}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Without label' }}
@@ -209,8 +210,8 @@ const TradeForm = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Domestic Currency</InputLabel>
               <Select
-                name="domCurrency"
-                value={formData.domCurrency}
+                name="DomCurrency"
+                value={formData.DomCurrency}
                 onChange={handleChange}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Without label' }}
@@ -228,8 +229,8 @@ const TradeForm = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Foreign Currency</InputLabel>
               <Select
-                name="forCurrency"
-                value={formData.forCurrency}
+                name="FgnCurrency"
+                value={formData.FgnCurrency}
                 onChange={handleChange}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Without label' }}
@@ -247,8 +248,8 @@ const TradeForm = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Index 1</InputLabel>
               <Select
-                name="index1"
-                value={formData.index1}
+                name="Index1"
+                value={formData.Index1}
                 onChange={handleChange}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Without label' }}
@@ -266,8 +267,8 @@ const TradeForm = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Index 2</InputLabel>
               <Select
-                name="index2"
-                value={formData.index2}
+                name="Index2"
+                value={formData.Index2}
                 onChange={handleChange}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Without label' }}
@@ -284,8 +285,8 @@ const TradeForm = () => {
             </FormControl>
             <TextField
               label="Level"
-              name="level"
-              value={formData.level}
+              name="Level"
+              value={formData.Level}
               onChange={handleChange}
               fullWidth
               margin="normal"
@@ -293,8 +294,8 @@ const TradeForm = () => {
             <TextField
               label="Maturity"
               type="date"
-              name="maturity"
-              value={formData.maturity}
+              name="Maturity"
+              value={formData.Maturity}
               onChange={handleChange}
               fullWidth
               margin="normal"
@@ -302,56 +303,56 @@ const TradeForm = () => {
             />
             <TextField
               label="Risk (USD)"
-              name="riskUsd"
-              value={formData.riskUsd}
+              name="Risk"
+              value={formData.Risk}
               onChange={handleChange}
               fullWidth
               margin="normal"
             />
             <TextField
               label="Direction"
-              name="direction"
-              value={formData.direction}
+              name="Direction"
+              value={formData.Direction}
               onChange={handleChange}
               fullWidth
               margin="normal"
             />
             <TextField
               label="Cost (bps)"
-              name="costBps"
-              value={formData.costBps}
+              name="Cost"
+              value={formData.Cost}
               onChange={handleChange}
               fullWidth
               margin="normal"
             />
             <TextField
               label="Comment"
-              name="comment"
-              value={formData.comment}
+              name="Comment"
+              value={formData.Comment}
               onChange={handleChange}
               fullWidth
               margin="normal"
             />
             <TextField
               label="Database ID"
-              name="databaseId"
-              value={formData.databaseId}
+              name="DatabaseID"
+              value={formData.DatabaseID}
               onChange={handleChange}
               fullWidth
               margin="normal"
             />
             <TextField
               label="Nominal 1"
-              name="nominal1"
-              value={formData.nominal1}
+              name="Nominal1"
+              value={formData.Nominal1}
               onChange={handleChange}
               fullWidth
               margin="normal"
             />
             <TextField
               label="Nominal 2"
-              name="nominal2"
-              value={formData.nominal2}
+              name="Nominal2"
+              value={formData.Nominal2}
               onChange={handleChange}
               fullWidth
               margin="normal"
