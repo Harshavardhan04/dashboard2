@@ -35,6 +35,7 @@ const columns = [
 const ContainerStyled = styled(Container)({
   display: 'flex',
   flexDirection: 'row',
+  width: '100%',
   height: '100vh',
   alignItems: 'flex-start',
   paddingTop: '20px',
@@ -43,6 +44,7 @@ const ContainerStyled = styled(Container)({
 
 const TableContainer = styled(Box)({
   flex: 1,
+  width: '100%',
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   paddingRight: '10px',
@@ -50,6 +52,7 @@ const TableContainer = styled(Box)({
 
 const FormContainer = styled(Box)({
   flex: 1,
+  width: '100%',
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   padding: '16px',
