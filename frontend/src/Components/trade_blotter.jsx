@@ -44,8 +44,7 @@ const ContainerStyled = styled(Box)({
 });
 
 const TableContainer = styled(Box)({
-  flex: 1,
-  width: '50%',
+  flex: '7',
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   paddingRight: '10px',
@@ -53,8 +52,7 @@ const TableContainer = styled(Box)({
 });
 
 const FormContainer = styled(Box)({
-  flex: 1,
-  width: '50%',
+  flex: '3',
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   padding: '16px',
@@ -93,8 +91,20 @@ const HideButton = styled(Button)({
 const SubmitButton = styled(Button)({
   backgroundColor: 'red',
   color: 'white',
+  marginTop: '10px',
   '&:hover': {
     backgroundColor: 'darkred',
+  },
+});
+
+const ResetButton = styled(Button)({
+  backgroundColor: 'white',
+  color: 'red',
+  border: '1px solid red',
+  marginTop: '10px',
+  marginLeft: '10px',
+  '&:hover': {
+    backgroundColor: 'lightgray',
   },
 });
 
@@ -156,6 +166,26 @@ const TradeForm = () => {
     } else {
       console.error('Failed to submit trade');
     }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      TradeDate: '',
+      ValuationFunction: '',
+      DomCurrency: '',
+      FgnCurrency: '',
+      Index1: '',
+      Index2: '',
+      Level: '',
+      Maturity: '',
+      Risk: '',
+      Direction: '',
+      Cost: '',
+      Comment: '',
+      DatabaseID: '',
+      Nominal1: '',
+      Nominal2: ''
+    });
   };
 
   return (
@@ -363,9 +393,14 @@ const TradeForm = () => {
               fullWidth
               margin="normal"
             />
-            <SubmitButton type="submit">
-              Submit
-            </SubmitButton>
+            <Box display="flex" justifyContent="space-between">
+              <SubmitButton type="submit">
+                Submit
+              </SubmitButton>
+              <ResetButton onClick={handleReset}>
+                Reset
+              </ResetButton>
+            </Box>
           </form>
         </FormContainer>
       )}
