@@ -118,7 +118,7 @@ const TradeForm = () => {
     const fetchData = async () => {
       const response = await fetch('/api/trades');
       const data = await response.json();
-      setRows(data);
+      setRows(data.map((row, index) => ({ ...row, id: row.id ?? index }))); // Ensure each row has a unique id
     };
 
     fetchData();
