@@ -15,16 +15,16 @@ const valuationFunctions = ['InterestRateSwap', 'BasisSwap', 'BasisSwapMTM2', 'I
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'TradeDate', headerName: 'Trade Date', width: 150 },
-  { field: 'Trader', headerName: 'Trader', width: 150 },
-  { field: 'TradeSubType', headerName: 'Trade Sub Type', width: 150 },
-  { field: 'Underlying', headerName: 'Underlying', width: 150 },
-  { field: 'Currency', headerName: 'Currency', width: 150 },
-  { field: 'Strategy', headerName: 'Strategy', width: 150 },
-  { field: 'Notional', headerName: 'Notional', width: 150 },
-  { field: 'MaturityDate', headerName: 'Maturity Date', width: 150 },
-  { field: 'RequestType', headerName: 'Request Type', width: 150 },
-  { field: 'Client', headerName: 'Client', width: 150 },
+  { field: 'entryDate', headerName: 'Entry Date', width: 150 },
+  { field: 'trader', headerName: 'Trader', width: 150 },
+  { field: 'tradeSubType', headerName: 'Trade Sub Type', width: 150 },
+  { field: 'underlying', headerName: 'Underlying', width: 150 },
+  { field: 'currency', headerName: 'Currency', width: 150 },
+  { field: 'strategy', headerName: 'Strategy', width: 150 },
+  { field: 'notional', headerName: 'Notional', width: 150 },
+  { field: 'maturityDate', headerName: 'Maturity Date', width: 150 },
+  { field: 'requestType', headerName: 'Request Type', width: 150 },
+  { field: 'client', headerName: 'Client', width: 150 },
 ];
 
 const ContainerStyled = styled(Container)({
