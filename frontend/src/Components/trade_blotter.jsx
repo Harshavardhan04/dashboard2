@@ -25,7 +25,7 @@ const columns = [
   { field: 'Maturity', headerName: 'Maturity', width: 150 },
   { field: 'Risk', headerName: 'Risk', width: 150 },
   { field: 'Direction', headerName: 'Direction', width: 150 },
-  { field: 'Cost(bps)', headerName: 'Cost(bps)', width: 150 },
+  { field: 'Cost', headerName: 'Cost(bps)', width: 150 },
   { field: 'Comment', headerName: 'Comment', width: 150 },
   { field: 'DatabaseID', headerName: 'Database ID', width: 150 },
   { field: 'Nominal1', headerName: 'Nominal 1', width: 150 },
@@ -42,14 +42,14 @@ const ContainerStyled = styled(Container)({
 });
 
 const TableContainer = styled(Box)({
-  width: '60%',
+  flex: 1,
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   paddingRight: '10px',
 });
 
 const FormContainer = styled(Box)({
-  width: '40%',
+  flex: 1,
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   padding: '16px',
