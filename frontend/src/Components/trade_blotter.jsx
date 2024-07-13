@@ -32,7 +32,7 @@ const columns = [
   { field: 'Nominal2', headerName: 'Nominal 2', width: 150 },
 ];
 
-const ContainerStyled = styled(Container)({
+const ContainerStyled = styled(Box)({
   display: 'flex',
   flexDirection: 'row',
   width: '100%',
@@ -40,22 +40,25 @@ const ContainerStyled = styled(Container)({
   alignItems: 'flex-start',
   paddingTop: '20px',
   marginTop: '20px',
+  boxSizing: 'border-box',
 });
 
 const TableContainer = styled(Box)({
   flex: 1,
-  width: '100%',
+  width: '50%',
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   paddingRight: '10px',
+  boxSizing: 'border-box',
 });
 
 const FormContainer = styled(Box)({
   flex: 1,
-  width: '100%',
+  width: '50%',
   height: 'calc(100vh - 100px)',
   overflow: 'auto',
   padding: '16px',
+  boxSizing: 'border-box',
 });
 
 const ButtonContainer = styled(Box)({
