@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TextField, Button, MenuItem, Container, FormControl, InputLabel, Select, Box
+  TextField, Button, MenuItem, FormControl, InputLabel, Select, Box
 } from '@mui/material';
 import {
   DataGrid,
@@ -21,15 +21,15 @@ const columns = [
   { field: 'FgnCurrency', headerName: 'Fgn Currency', width: 150 },
   { field: 'Index1', headerName: 'Index 1', width: 150 },
   { field: 'Index2', headerName: 'Index 2', width: 150 },
-  { field: 'Level', headerName: 'Level', width: 150 },
+  { field: 'Level', headerName: 'Level', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
   { field: 'Maturity', headerName: 'Maturity', width: 150 },
-  { field: 'Risk', headerName: 'Risk', width: 150 },
+  { field: 'Risk', headerName: 'Risk', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
   { field: 'Direction', headerName: 'Direction', width: 150 },
-  { field: 'Cost', headerName: 'Cost(bps)', width: 150 },
+  { field: 'Cost', headerName: 'Cost(bps)', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
   { field: 'Comment', headerName: 'Comment', width: 150 },
   { field: 'DatabaseID', headerName: 'Database ID', width: 150 },
-  { field: 'Nominal1', headerName: 'Nominal 1', width: 150 },
-  { field: 'Nominal2', headerName: 'Nominal 2', width: 150 },
+  { field: 'Nominal1', headerName: 'Nominal 1', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
+  { field: 'Nominal2', headerName: 'Nominal 2', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
 ];
 
 const ContainerStyled = styled(Box)({
@@ -134,6 +134,7 @@ const TradeForm = () => {
   const [showForm, setShowForm] = useState(true);
   const [showTable, setShowTable] = useState(true);
   const [rows, setRows] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,6 +189,30 @@ const TradeForm = () => {
     });
   };
 
+  const handleRowSelection = (selection) => {
+    const selected = rows.find(row => row.id === selection[0]);
+    if (selected) {
+      setSelectedRow(selected);
+      setFormData({
+        TradeDate: selected.TradeDate || '',
+        ValuationFunction: selected.ValuationFunction || '',
+        DomCurrency: selected.DomCurrency || '',
+        FgnCurrency: selected.FgnCurrency || '',
+        Index1: selected.Index1 || '',
+        Index2: selected.Index2 || '',
+        Level: selected.Level || '',
+        Maturity: selected.Maturity || '',
+        Risk: selected.Risk || '',
+        Direction: selected.Direction || '',
+        Cost: selected.Cost || '',
+        Comment: selected.Comment || '',
+        DatabaseID: selected.DatabaseID || '',
+        Nominal1: selected.Nominal1 || '',
+        Nominal2: selected.Nominal2 || ''
+      });
+    }
+  };
+
   return (
     <ContainerStyled>
       {showTable && (
@@ -202,10 +227,14 @@ const TradeForm = () => {
             components={{
               Toolbar: GridToolbar
             }}
+            onSelectionModelChange={handleRowSelection}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: '#f0f0f0',
                 fontWeight: 'bold'
+              },
+              '& .negative': {
+                color: 'red',
               }
             }}
           />
