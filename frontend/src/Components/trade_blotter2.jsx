@@ -5,6 +5,11 @@ import {
 import {
   DataGrid,
   GridToolbar,
+  GridToolbarContainer,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
+  GridToolbarDensitySelector,
+  GridToolbarExport
 } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
 
@@ -21,15 +26,15 @@ const columns = [
   { field: 'FgnCurrency', headerName: 'Fgn Currency', width: 150 },
   { field: 'Index1', headerName: 'Index 1', width: 150 },
   { field: 'Index2', headerName: 'Index 2', width: 150 },
-  { field: 'Level', headerName: 'Level', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
+  { field: 'Level', headerName: 'Level', width: 150 },
   { field: 'Maturity', headerName: 'Maturity', width: 150 },
-  { field: 'Risk', headerName: 'Risk', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
+  { field: 'Risk', headerName: 'Risk', width: 150 },
   { field: 'Direction', headerName: 'Direction', width: 150 },
-  { field: 'Cost', headerName: 'Cost(bps)', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
+  { field: 'Cost', headerName: 'Cost(bps)', width: 150 },
   { field: 'Comment', headerName: 'Comment', width: 150 },
   { field: 'DatabaseID', headerName: 'Database ID', width: 150 },
-  { field: 'Nominal1', headerName: 'Nominal 1', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
-  { field: 'Nominal2', headerName: 'Nominal 2', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
+  { field: 'Nominal1', headerName: 'Nominal 1', width: 150 },
+  { field: 'Nominal2', headerName: 'Nominal 2', width: 150 },
 ];
 
 const ContainerStyled = styled(Box)({
@@ -39,7 +44,7 @@ const ContainerStyled = styled(Box)({
   height: '100vh',
   alignItems: 'flex-start',
   paddingTop: '20px',
-  marginTop: '20px',
+  marginTop: '60px',
   boxSizing: 'border-box',
 });
 
@@ -113,6 +118,17 @@ const HeaderCell = styled('div')({
   backgroundColor: '#f0f0f0',
 });
 
+const CustomToolbar = () => {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton />
+      <GridToolbarDensitySelector />
+      <GridToolbarExport />
+    </GridToolbarContainer>
+  );
+};
+
 const TradeForm = () => {
   const [formData, setFormData] = useState({
     TradeDate: '',
@@ -138,7 +154,7 @@ const TradeForm = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('/api/trades');
+      const response = await fetch('/fva_data_get_blotter');
       const data = await response.json();
       setRows(data.map((row, index) => ({ ...row, id: row.id ?? index }))); // Ensure each row has a unique id
     };
@@ -225,16 +241,13 @@ const TradeForm = () => {
             checkboxSelection
             disableSelectionOnClick
             components={{
-              Toolbar: GridToolbar
+              Toolbar: CustomToolbar
             }}
             onSelectionModelChange={handleRowSelection}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: '#f0f0f0',
                 fontWeight: 'bold'
-              },
-              '& .negative': {
-                color: 'red',
               }
             }}
           />
