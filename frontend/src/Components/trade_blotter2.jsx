@@ -3,12 +3,7 @@ import {
   TextField, Button, MenuItem, FormControl, InputLabel, Select, Box
 } from '@mui/material';
 import {
-  DataGrid,
-  GridToolbarContainer,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-  GridToolbarDensitySelector,
-  GridToolbarExport
+  DataGrid, GridToolbar
 } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
 
@@ -117,17 +112,6 @@ const HeaderCell = styled('div')({
   backgroundColor: '#f0f0f0',
 });
 
-const CustomToolbar = () => {
-  return (
-    <GridToolbarContainer>
-      <GridToolbarColumnsButton />
-      <GridToolbarFilterButton />
-      <GridToolbarDensitySelector />
-      <GridToolbarExport />
-    </GridToolbarContainer>
-  );
-};
-
 const TradeForm = () => {
   const [formData, setFormData] = useState({
     TradeDate: '',
@@ -205,26 +189,28 @@ const TradeForm = () => {
   };
 
   const handleRowSelection = (selection) => {
-    const selected = rows.find(row => row.id === selection[0]);
-    if (selected) {
-      setSelectedRow(selected);
-      setFormData({
-        TradeDate: selected.TradeDate || '',
-        ValuationFunction: selected.ValuationFunction || '',
-        DomCurrency: selected.DomCurrency || '',
-        FgnCurrency: selected.FgnCurrency || '',
-        Index1: selected.Index1 || '',
-        Index2: selected.Index2 || '',
-        Level: selected.Level || '',
-        Maturity: selected.Maturity || '',
-        Risk: selected.Risk || '',
-        Direction: selected.Direction || '',
-        Cost: selected.Cost || '',
-        Comment: selected.Comment || '',
-        DatabaseID: selected.DatabaseID || '',
-        Nominal1: selected.Nominal1 || '',
-        Nominal2: selected.Nominal2 || ''
-      });
+    if (selection.length === 1) {
+      const selected = rows.find(row => row.id === selection[0]);
+      if (selected) {
+        setSelectedRow(selected);
+        setFormData({
+          TradeDate: selected.TradeDate || '',
+          ValuationFunction: selected.ValuationFunction || '',
+          DomCurrency: selected.DomCurrency || '',
+          FgnCurrency: selected.FgnCurrency || '',
+          Index1: selected.Index1 || '',
+          Index2: selected.Index2 || '',
+          Level: selected.Level || '',
+          Maturity: selected.Maturity || '',
+          Risk: selected.Risk || '',
+          Direction: selected.Direction || '',
+          Cost: selected.Cost || '',
+          Comment: selected.Comment || '',
+          DatabaseID: selected.DatabaseID || '',
+          Nominal1: selected.Nominal1 || '',
+          Nominal2: selected.Nominal2 || ''
+        });
+      }
     }
   };
 
@@ -239,10 +225,12 @@ const TradeForm = () => {
             rowsPerPageOptions={[5]}
             checkboxSelection
             disableSelectionOnClick
-            components={{
-              Toolbar: CustomToolbar
+            slots={{
+              toolbar: GridToolbar,
             }}
-            onSelectionModelChange={handleRowSelection}
+            onRowSelectionModelChange={(newSelection) => {
+              handleRowSelection(newSelection);
+            }}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: '#f0f0f0',
@@ -473,4 +461,4 @@ const TradeForm = () => {
   );
 };
 
-export default TradeForm;
+export default TradeBlotter;
