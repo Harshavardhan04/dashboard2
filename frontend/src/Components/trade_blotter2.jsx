@@ -4,7 +4,6 @@ import {
 } from '@mui/material';
 import {
   DataGrid,
-  GridToolbar,
   GridToolbarContainer,
   GridToolbarColumnsButton,
   GridToolbarFilterButton,
