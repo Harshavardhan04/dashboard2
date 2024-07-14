@@ -21,15 +21,15 @@ const columns = [
   { field: 'FgnCurrency', headerName: 'Fgn Currency', width: 150 },
   { field: 'Index1', headerName: 'Index 1', width: 150 },
   { field: 'Index2', headerName: 'Index 2', width: 150 },
-  { field: 'Level', headerName: 'Level', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
+  { field: 'Level', headerName: 'Level', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
   { field: 'Maturity', headerName: 'Maturity', width: 150 },
-  { field: 'Risk', headerName: 'Risk', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
+  { field: 'Risk', headerName: 'Risk', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
   { field: 'Direction', headerName: 'Direction', width: 150 },
-  { field: 'Cost', headerName: 'Cost(bps)', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
+  { field: 'Cost', headerName: 'Cost(bps)', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
   { field: 'Comment', headerName: 'Comment', width: 150 },
   { field: 'DatabaseID', headerName: 'Database ID', width: 150 },
-  { field: 'Nominal1', headerName: 'Nominal 1', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
-  { field: 'Nominal2', headerName: 'Nominal 2', width: 150, getCellClassName: (params) => params.value < 0 ? 'negative' : '' },
+  { field: 'Nominal1', headerName: 'Nominal 1', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
+  { field: 'Nominal2', headerName: 'Nominal 2', width: 150, getCellClassName: (params) => parseFloat(params.value) < 0 ? 'negative' : '' },
 ];
 
 const ContainerStyled = styled(Box)({
