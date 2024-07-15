@@ -22,11 +22,10 @@ const columns = [
   { field: 'Index2', headerName: 'Index 2', width: 150 },
   { field: 'Level', headerName: 'Level', width: 150 },
   { field: 'Maturity', headerName: 'Maturity', width: 150 },
-  { field: 'Risk', headerName: 'Risk', width: 150 },
+  { field: 'Risk (USD)', headerName: 'Risk (USD)', width: 150 },
   { field: 'Direction', headerName: 'Direction', width: 150 },
-  { field: 'Cost', headerName: 'Cost(bps)', width: 150 },
+  { field: 'Cost(bps)', headerName: 'Cost(bps)', width: 150 },
   { field: 'Comment', headerName: 'Comment', width: 150 },
-  // Hide the DatabaseID column
   { field: 'DatabaseID', headerName: 'Database ID', width: 150, hide: true },
   { field: 'Nominal1', headerName: 'Nominal 1', width: 150 },
   { field: 'Nominal2', headerName: 'Nominal 2', width: 150 },
@@ -97,17 +96,7 @@ const SubmitButton = styled(Button)({
   },
 });
 
-const EditButton = styled(Button)({
-  backgroundColor: 'red',
-  color: 'white',
-  marginTop: '10px',
-  marginLeft: '10px',
-  '&:hover': {
-    backgroundColor: 'darkred',
-  },
-});
-
-const DeleteButton = styled(Button)({
+const ResetButton = styled(Button)({
   backgroundColor: 'white',
   color: 'red',
   border: '1px solid red',
@@ -150,7 +139,8 @@ const TradeForm = () => {
     const fetchData = async () => {
       const response = await fetch('/fva_data_get_blotter');
       const data = await response.json();
-      setRows(data.map((row, index) => ({ ...row, id: row.id ?? index }))); // Ensure each row has a unique id
+      console.log('Fetched data:', data); // Debug statement
+      setRows(data.map((row, index) => ({ ...row, id: row.DatabaseID ?? index }))); // Ensure each row has a unique id
     };
 
     fetchData();
@@ -165,6 +155,7 @@ const TradeForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form Data:', formData);  // Log form data
     const response = await fetch('/api/add_trade', {
       method: 'POST',
       headers: {
@@ -175,6 +166,9 @@ const TradeForm = () => {
     if (response.ok) {
       console.log('Trade added successfully');
       // Optionally, refresh data or update state
+      const data = await response.json();
+      console.log('Response data:', data); // Debug statement
+      setRows([...rows, { ...formData, id: formData.DatabaseID }]);
     } else {
       console.error('Failed to add trade');
     }
@@ -182,6 +176,7 @@ const TradeForm = () => {
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    console.log('Edit Form Data:', formData);  // Log form data
     const response = await fetch('/api/edit_trade', {
       method: 'POST',
       headers: {
@@ -192,6 +187,8 @@ const TradeForm = () => {
     if (response.ok) {
       console.log('Trade edited successfully');
       // Optionally, refresh data or update state
+      const updatedRows = rows.map(row => row.DatabaseID === formData.DatabaseID ? formData : row);
+      setRows(updatedRows);
     } else {
       console.error('Failed to edit trade');
     }
@@ -208,6 +205,8 @@ const TradeForm = () => {
     if (response.ok) {
       console.log('Trade deleted successfully');
       // Optionally, refresh data or update state
+      const updatedRows = rows.filter(row => row.DatabaseID !== formData.DatabaseID);
+      setRows(updatedRows);
     } else {
       console.error('Failed to delete trade');
     }
@@ -223,9 +222,9 @@ const TradeForm = () => {
       Index2: '',
       Level: '',
       Maturity: '',
-      Risk: '',
+      'Risk (USD)': '',
       Direction: '',
-      Cost: '',
+      'Cost(bps)': '',
       Comment: '',
       DatabaseID: '',
       Nominal1: '',
@@ -247,9 +246,9 @@ const TradeForm = () => {
           Index2: selected.Index2 || '',
           Level: selected.Level || '',
           Maturity: selected.Maturity || '',
-          Risk: selected.Risk || '',
+          Risk: selected['Risk (USD)'] || '',
           Direction: selected.Direction || '',
-          Cost: selected.Cost || '',
+          Cost: selected['Cost(bps)'] || '',
           Comment: selected.Comment || '',
           DatabaseID: selected.DatabaseID || '',
           Nominal1: selected.Nominal1 || '',
@@ -271,23 +270,26 @@ const TradeForm = () => {
             disableSelectionOnClick
             checkboxSelection={false}
             onRowSelectionModelChange={(newSelection) => {
-              handleRowSelection(newSelection);
+              handleRowSelection(newSelection.selectionModel);
+            }}
+            slots={{
+              toolbar: GridToolbar,
             }}
             sx={{
               '& .MuiDataGrid-columnHeaders': {
                 backgroundColor: '#f0f0f0',
                 fontWeight: 'bold'
+              },
+              '& .negative': {
+                color: 'red',
               }
-            }}
-            slots={{
-              toolbar: GridToolbar,
             }}
           />
         </TableContainer>
       )}
       {showForm && (
         <FormContainer>
-          <form onSubmit={selectedRow ? handleEdit : handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <TextField
               label="Trade Date"
               name="TradeDate"
@@ -295,6 +297,7 @@ const TradeForm = () => {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              InputLabelProps={{ shrink: true }}
             />
             <FormControl fullWidth margin="normal">
               <InputLabel>Valuation Function</InputLabel>
@@ -406,11 +409,12 @@ const TradeForm = () => {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               label="Risk (USD)"
-              name="Risk"
-              value={formData.Risk}
+              name="Risk (USD)"
+              value={formData['Risk (USD)']}
               onChange={handleChange}
               fullWidth
               margin="normal"
@@ -425,8 +429,8 @@ const TradeForm = () => {
             />
             <TextField
               label="Cost (bps)"
-              name="Cost"
-              value={formData.Cost}
+              name="Cost(bps)"
+              value={formData['Cost(bps)']}
               onChange={handleChange}
               fullWidth
               margin="normal"
