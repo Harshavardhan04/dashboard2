@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Container, CssBaseline, TextField, FormControl, Grid, Typography, Box, Button
@@ -101,7 +100,6 @@ export default CsvViewer;
 
 
 
-
 //backend
 
 // from flask import Flask, request, jsonify
@@ -154,28 +152,33 @@ export default CsvViewer;
 //     return dict_files
 
 // # New process_csv_files function
-// def process_csv_files(start_date, end_date):
-//     dict_files = get_data(start_date, end_date)
+def process_csv_files(start_date, end_date):
+    dict_files = get_data(start_date, end_date)
 
-//     books_df = pd.read_csv(dict_files['Books'])
-//     vfs_df = pd.read_csv(dict_files['VFs'])
+    books_df = pd.read_csv(dict_files['Books'])
+    vfs_df = pd.read_csv(dict_files['VFs'])
 
-//     books_data = books_df.to_dict(orient='records')
-//     vfs_data = vfs_df.to_dict(orient='records')
+    # Add a unique id to each row
+    books_df['id'] = books_df.index
+    vfs_df['id'] = vfs_df.index
 
-//     books_columns = [{"field": col, "headerName": col, "width": 150} for col in books_df.columns]
-//     vfs_columns = [{"field": col, "headerName": col, "width": 150} for col in vfs_df.columns]
+    books_data = books_df.to_dict(orient='records')
+    vfs_data = vfs_df.to_dict(orient='records')
 
-//     return {
-//         'Books': {
-//             'columns': books_columns,
-//             'rows': books_data
-//         },
-//         'VFs': {
-//             'columns': vfs_columns,
-//             'rows': vfs_data
-//         }
-//     }
+    books_columns = [{"field": col, "headerName": col, "width": 150} for col in books_df.columns]
+    vfs_columns = [{"field": col, "headerName": col, "width": 150} for col in vfs_df.columns]
+
+    return {
+        'Books': {
+            'columns': books_columns,
+            'rows': books_data
+        },
+        'VFs': {
+            'columns': vfs_columns,
+            'rows': vfs_data
+        }
+    }
+
 
 // @app.route('/get_csv_data', methods=['POST'])
 // def get_csv_data():
