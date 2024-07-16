@@ -19,6 +19,7 @@ const CsvViewer = () => {
   const [filteredVfsRows, setFilteredVfsRows] = useState([]);
   const [filteredVfsColumns, setFilteredVfsColumns] = useState([]);
   const [tabValue, setTabValue] = useState(0);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -38,6 +39,7 @@ const CsvViewer = () => {
         setBooksRows(result.Books.rows.map((row, index) => ({ id: index, ...row })));
         setVfsColumns([{ field: 'VF', headerName: 'VF', resizable: false }, ...result.VFs.columns.map((col) => ({ ...col, resizable: false }))]);
         setVfsRows(result.VFs.rows.map((row, index) => ({ id: index, ...row })));
+        setInitialLoad(false); // Set initialLoad to false after the first load
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -55,10 +57,15 @@ const CsvViewer = () => {
       }
 
       const firstColumn = columns[0];
-      const filteredColumns = [firstColumn, ...columns.slice(1).filter((col) => {
-        const colDate = new Date(col.field);
-        return colDate >= startDate && colDate <= endDate;
-      })];
+      const filteredColumns = initialLoad 
+        ? columns.filter((col) => {
+            const colDate = new Date(col.field);
+            return colDate >= startDate && colDate <= endDate;
+          })
+        : [firstColumn, ...columns.slice(1).filter((col) => {
+            const colDate = new Date(col.field);
+            return colDate >= startDate && colDate <= endDate;
+          })];
 
       const filteredRows = rows.map((row, index) => {
         const filteredRow = { id: row.id || index }; // Ensure each row has a unique id
@@ -78,7 +85,7 @@ const CsvViewer = () => {
     setFilteredBooksColumns(filteredBooksColumns);
     setFilteredVfsRows(filteredVfsRows);
     setFilteredVfsColumns(filteredVfsColumns);
-  }, [startDate, endDate, booksRows, booksColumns, vfsRows, vfsColumns]);
+  }, [startDate, endDate, booksRows, booksColumns, vfsRows, vfsColumns, initialLoad]);
 
   return (
     <>
