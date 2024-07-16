@@ -34,10 +34,10 @@ const CsvViewer = () => {
       });
       const result = await response.json();
       if (result.Books && result.VFs) {
-        setBooksColumns(result.Books.columns);
-        setBooksRows(result.Books.rows);
-        setVfsColumns(result.VFs.columns);
-        setVfsRows(result.VFs.rows);
+        setBooksColumns(result.Books.columns.map((col) => ({ ...col, resizable: false })));  // Ensure all columns have required properties
+        setBooksRows(result.Books.rows.map((row, index) => ({ id: index, ...row })));  // Ensure rows have unique id
+        setVfsColumns(result.VFs.columns.map((col) => ({ ...col, resizable: false })));  // Ensure all columns have required properties
+        setVfsRows(result.VFs.rows.map((row, index) => ({ id: index, ...row })));  // Ensure rows have unique id
       }
     } catch (error) {
       console.error('Error fetching data:', error);
