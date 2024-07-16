@@ -34,10 +34,10 @@ const CsvViewer = () => {
       });
       const result = await response.json();
       if (result.Books && result.VFs) {
-        setBooksColumns(result.Books.columns.map((col) => ({ ...col, resizable: false })));  // Ensure all columns have required properties
-        setBooksRows(result.Books.rows.map((row, index) => ({ id: index, ...row })));  // Ensure rows have unique id
-        setVfsColumns(result.VFs.columns.map((col) => ({ ...col, resizable: false })));  // Ensure all columns have required properties
-        setVfsRows(result.VFs.rows.map((row, index) => ({ id: index, ...row })));  // Ensure rows have unique id
+        setBooksColumns([{ field: 'BookID', headerName: 'BookID', resizable: false }, ...result.Books.columns.map((col) => ({ ...col, resizable: false }))]);
+        setBooksRows(result.Books.rows.map((row, index) => ({ id: index, ...row })));
+        setVfsColumns([{ field: 'VF', headerName: 'VF', resizable: false }, ...result.VFs.columns.map((col) => ({ ...col, resizable: false }))]);
+        setVfsRows(result.VFs.rows.map((row, index) => ({ id: index, ...row })));
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -55,26 +55,20 @@ const CsvViewer = () => {
       }
 
       const firstColumn = columns[0];
-      const filteredColumns = columns.filter((col) => {
+      const filteredColumns = [firstColumn, ...columns.slice(1).filter((col) => {
         const colDate = new Date(col.field);
         return colDate >= startDate && colDate <= endDate;
-      });
+      })];
 
       const filteredRows = rows.map((row, index) => {
-        const filteredRow = { id: row.id || index };  // Ensure each row has a unique id
+        const filteredRow = { id: row.id || index }; // Ensure each row has a unique id
         filteredColumns.forEach((col) => {
           filteredRow[col.field] = row[col.field];
         });
-        // Include the first column value in the filtered row
-        filteredRow[firstColumn.field] = row[firstColumn.field];
         return filteredRow;
       });
 
-      // Include the first column in the filtered columns
-      return {
-        filteredRows: filteredRows,
-        filteredColumns: [firstColumn, ...filteredColumns]
-      };
+      return { filteredRows, filteredColumns };
     };
 
     const { filteredRows: filteredBooksRows, filteredColumns: filteredBooksColumns } = filterRowsAndColumns(booksRows, booksColumns, startDate, endDate);
