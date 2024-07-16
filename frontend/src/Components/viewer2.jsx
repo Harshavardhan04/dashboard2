@@ -35,10 +35,15 @@ const CsvViewer = () => {
       });
       const result = await response.json();
       if (result.Books && result.VFs) {
+        console.log('Books columns:', result.Books.columns); // Debugging line
+        console.log('VFs columns:', result.VFs.columns); // Debugging line
+
         setBooksColumns([{ field: 'BookID', headerName: 'BookID', resizable: false }, ...result.Books.columns.map((col) => ({ ...col, resizable: false }))]);
         setBooksRows(result.Books.rows.map((row, index) => ({ id: index, ...row })));
+        
         setVfsColumns([{ field: 'ValuationFunction', headerName: 'ValuationFunction', resizable: false }, ...result.VFs.columns.map((col) => ({ ...col, resizable: false }))]);
         setVfsRows(result.VFs.rows.map((row, index) => ({ id: index, ...row })));
+        
         setInitialLoad(false); // Set initialLoad to false after the first load
       }
     } catch (error) {
