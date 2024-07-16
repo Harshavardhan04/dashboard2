@@ -12,36 +12,48 @@ const CsvViewer = () => {
   const [endDate, setEndDate] = useState(new Date('2024-12-31'));
   const [booksColumns, setBooksColumns] = useState([]);
   const [booksRows, setBooksRows] = useState([]);
+  const [filteredBooksRows, setFilteredBooksRows] = useState([]);
   const [vfsColumns, setVfsColumns] = useState([]);
   const [vfsRows, setVfsRows] = useState([]);
+  const [filteredVfsRows, setFilteredVfsRows] = useState([]);
 
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:5000/get_csv_data', {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
-        }),
       });
       const result = await response.json();
       if (result.Books && result.VFs) {
         setBooksColumns(result.Books.columns);
         setBooksRows(result.Books.rows);
+        setFilteredBooksRows(result.Books.rows);
         setVfsColumns(result.VFs.columns);
         setVfsRows(result.VFs.rows);
+        setFilteredVfsRows(result.VFs.rows);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
+  const filterRows = (rows, startDate, endDate) => {
+    return rows.filter(row => {
+      const rowDate = new Date(row['Entry Date']);
+      return rowDate >= startDate && rowDate <= endDate;
+    });
+  };
+
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate]);
+  }, []);
+
+  useEffect(() => {
+    setFilteredBooksRows(filterRows(booksRows, startDate, endDate));
+    setFilteredVfsRows(filterRows(vfsRows, startDate, endDate));
+  }, [startDate, endDate, booksRows, vfsRows]);
 
   return (
     <>
@@ -74,27 +86,22 @@ const CsvViewer = () => {
           <Grid item xs={12}>
             <Typography variant="h6">Books Data</Typography>
             <Box sx={{ height: 400, width: '100%' }}>
-              <DataGrid rows={booksRows} columns={booksColumns} pageSize={5} rowsPerPageOptions={[5]} />
+              <DataGrid rows={filteredBooksRows} columns={booksColumns} pageSize={5} rowsPerPageOptions={[5]} />
             </Box>
           </Grid>
           <Grid item xs={12}>
             <Typography variant="h6">VFs Data</Typography>
             <Box sx={{ height: 400, width: '100%' }}>
-              <DataGrid rows={vfsRows} columns={vfsColumns} pageSize={5} rowsPerPageOptions={[5]} />
+              <DataGrid rows={filteredVfsRows} columns={vfsColumns} pageSize={5} rowsPerPageOptions={[5]} />
             </Box>
           </Grid>
         </Grid>
-        <Button variant="contained" color="primary" onClick={fetchData} sx={{ mt: 2 }}>
-          Update Data
-        </Button>
       </Container>
     </>
   );
 };
 
 export default CsvViewer;
-
-
 
 
 
