@@ -37,7 +37,7 @@ const CsvViewer = () => {
       if (result.Books && result.VFs) {
         setBooksColumns([{ field: 'BookID', headerName: 'BookID', resizable: false }, ...result.Books.columns.map((col) => ({ ...col, resizable: false }))]);
         setBooksRows(result.Books.rows.map((row, index) => ({ id: index, ...row })));
-        setVfsColumns([{ field: 'VF', headerName: 'VF', resizable: false }, ...result.VFs.columns.map((col) => ({ ...col, resizable: false }))]);
+        setVfsColumns([{ field: 'ValuationFunction', headerName: 'ValuationFunction', resizable: false }, ...result.VFs.columns.map((col) => ({ ...col, resizable: false }))]);
         setVfsRows(result.VFs.rows.map((row, index) => ({ id: index, ...row })));
         setInitialLoad(false); // Set initialLoad to false after the first load
       }
