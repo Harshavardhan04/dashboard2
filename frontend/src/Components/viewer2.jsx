@@ -50,13 +50,17 @@ const CsvViewer = () => {
 
   useEffect(() => {
     const filterRowsAndColumns = (rows, columns, startDate, endDate) => {
+      if (columns.length === 0 || rows.length === 0) {
+        return { filteredRows: [], filteredColumns: [] };
+      }
+
       const firstColumn = columns[0];
       const filteredColumns = [firstColumn, ...columns.filter((col) => {
         const colDate = new Date(col.field);
         return colDate >= startDate && colDate <= endDate;
       })];
       const filteredRows = rows.map((row, index) => {
-        const filteredRow = { id: index };
+        const filteredRow = { id: row.id || index };  // Ensure each row has a unique id
         filteredColumns.forEach((col) => {
           filteredRow[col.field] = row[col.field];
         });
