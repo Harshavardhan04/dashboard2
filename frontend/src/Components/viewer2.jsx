@@ -12,10 +12,8 @@ const CsvViewer = () => {
   const [endDate, setEndDate] = useState(new Date('2024-12-31'));
   const [booksColumns, setBooksColumns] = useState([]);
   const [booksRows, setBooksRows] = useState([]);
-  const [filteredBooksRows, setFilteredBooksRows] = useState([]);
   const [vfsColumns, setVfsColumns] = useState([]);
   const [vfsRows, setVfsRows] = useState([]);
-  const [filteredVfsRows, setFilteredVfsRows] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -29,20 +27,20 @@ const CsvViewer = () => {
       if (result.Books && result.VFs) {
         setBooksColumns(result.Books.columns);
         setBooksRows(result.Books.rows);
-        setFilteredBooksRows(result.Books.rows);
         setVfsColumns(result.VFs.columns);
         setVfsRows(result.VFs.rows);
-        setFilteredVfsRows(result.VFs.rows);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const filterRows = (rows, startDate, endDate) => {
-    return rows.filter(row => {
-      const rowDate = new Date(row['Entry Date']);
-      return rowDate >= startDate && rowDate <= endDate;
+  const filterColumns = (columns, startDate, endDate) => {
+    const startDateString = startDate.toISOString().split('T')[0];
+    const endDateString = endDate.toISOString().split('T')[0];
+    return columns.filter(col => {
+      const colDate = new Date(col.field);
+      return colDate >= new Date(startDateString) && colDate <= new Date(endDateString);
     });
   };
 
@@ -51,9 +49,9 @@ const CsvViewer = () => {
   }, []);
 
   useEffect(() => {
-    setFilteredBooksRows(filterRows(booksRows, startDate, endDate));
-    setFilteredVfsRows(filterRows(vfsRows, startDate, endDate));
-  }, [startDate, endDate, booksRows, vfsRows]);
+    setBooksColumns(prevColumns => filterColumns(prevColumns, startDate, endDate));
+    setVfsColumns(prevColumns => filterColumns(prevColumns, startDate, endDate));
+  }, [startDate, endDate]);
 
   return (
     <>
@@ -86,13 +84,13 @@ const CsvViewer = () => {
           <Grid item xs={12}>
             <Typography variant="h6">Books Data</Typography>
             <Box sx={{ height: 400, width: '100%' }}>
-              <DataGrid rows={filteredBooksRows} columns={booksColumns} pageSize={5} rowsPerPageOptions={[5]} />
+              <DataGrid rows={booksRows} columns={booksColumns} pageSize={5} rowsPerPageOptions={[5]} />
             </Box>
           </Grid>
           <Grid item xs={12}>
             <Typography variant="h6">VFs Data</Typography>
             <Box sx={{ height: 400, width: '100%' }}>
-              <DataGrid rows={filteredVfsRows} columns={vfsColumns} pageSize={5} rowsPerPageOptions={[5]} />
+              <DataGrid rows={vfsRows} columns={vfsColumns} pageSize={5} rowsPerPageOptions={[5]} />
             </Box>
           </Grid>
         </Grid>
@@ -102,8 +100,6 @@ const CsvViewer = () => {
 };
 
 export default CsvViewer;
-
-
 
 
 
