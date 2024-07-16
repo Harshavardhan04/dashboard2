@@ -65,12 +65,14 @@ const CsvViewer = () => {
         filteredColumns.forEach((col) => {
           filteredRow[col.field] = row[col.field];
         });
+        // Include the first column value in the filtered row
+        filteredRow[firstColumn.field] = row[firstColumn.field];
         return filteredRow;
       });
 
-      // Include the first column in the filtered columns and filtered rows
+      // Include the first column in the filtered columns
       return {
-        filteredRows: filteredRows.map((row) => ({ [firstColumn.field]: row[firstColumn.field], ...row })),
+        filteredRows: filteredRows,
         filteredColumns: [firstColumn, ...filteredColumns]
       };
     };
