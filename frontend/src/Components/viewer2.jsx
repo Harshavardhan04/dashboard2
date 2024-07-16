@@ -55,10 +55,11 @@ const CsvViewer = () => {
       }
 
       const firstColumn = columns[0];
-      const filteredColumns = [firstColumn, ...columns.filter((col) => {
+      const filteredColumns = columns.filter((col) => {
         const colDate = new Date(col.field);
         return colDate >= startDate && colDate <= endDate;
-      })];
+      });
+
       const filteredRows = rows.map((row, index) => {
         const filteredRow = { id: row.id || index };  // Ensure each row has a unique id
         filteredColumns.forEach((col) => {
@@ -66,7 +67,12 @@ const CsvViewer = () => {
         });
         return filteredRow;
       });
-      return { filteredRows, filteredColumns };
+
+      // Include the first column in the filtered columns and filtered rows
+      return {
+        filteredRows: filteredRows.map((row) => ({ [firstColumn.field]: row[firstColumn.field], ...row })),
+        filteredColumns: [firstColumn, ...filteredColumns]
+      };
     };
 
     const { filteredRows: filteredBooksRows, filteredColumns: filteredBooksColumns } = filterRowsAndColumns(booksRows, booksColumns, startDate, endDate);
