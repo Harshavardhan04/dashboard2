@@ -139,13 +139,10 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
     const {
       target: { value },
     } = event;
-    
-    setSelectedCurrencies(
-      typeof value === 'string'
-        ? value.split(',')
-        : value
-    );
+    setSelectedCurrencies(value);
   };
+
+  const isSelected = (option) => selectedCurrencies.some((selected) => selected.value === option.value);
 
   return (
     <FormControl sx={{ m: 1, width: 300 }}>
@@ -162,7 +159,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
       >
         {options.map((option) => (
           <MenuItem key={option.value} value={option}>
-            <Checkbox checked={selectedCurrencies.indexOf(option) > -1} />
+            <Checkbox checked={isSelected(option)} />
             <ListItemText primary={option.label} />
           </MenuItem>
         ))}
