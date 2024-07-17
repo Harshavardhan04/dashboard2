@@ -27,9 +27,9 @@
           },
         },
         "& .MuiDataGrid-root": {
-          width: "auto",
           minWidth: `${columns.length * 100}px`,
           maxWidth: "100%",
+          margin: "0 auto",
         },
         "& .MuiDataGrid-viewport": {
           minWidth: `${columns.length * 100}px`,
@@ -60,12 +60,5 @@
 .data-grid-wrapper {
   display: flex;
   justify-content: center;
-  width: 100%;
-  max-width: 100%;
-}
-
-.data-grid-container {
-  display: flex;
-  justify-content: center; /* Center the DataGrid horizontally */
-  width: 100%;
+  width: auto; /* Adjust width to auto to prevent full-width expansion */
 }
