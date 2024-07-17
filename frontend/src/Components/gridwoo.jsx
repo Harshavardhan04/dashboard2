@@ -28,11 +28,11 @@
             },
           },
           "& .MuiDataGrid-root": {
-            width: "100%",
-            minWidth: "800px",  // Ensure a minimum width
+            minWidth: `${columns.length * 100}px`, // Set minimum width based on column count
+            maxWidth: "100%",
           },
           "& .MuiDataGrid-viewport": {
-            minWidth: "800px",  // Ensure a minimum width for viewport
+            minWidth: `${columns.length * 100}px`, // Set minimum width based on column count
           },
         }}
         slots={{
@@ -42,6 +42,7 @@
     </div>
   </div>
 </div>
+
 
 
 .table-container {
