@@ -139,6 +139,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
     const {
       target: { value },
     } = event;
+    
     setSelectedCurrencies(
       typeof value === 'string'
         ? value.split(',')
