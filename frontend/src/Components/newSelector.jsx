@@ -112,7 +112,6 @@
 // };
 
 // export default CurrencySelector;
-
 import React from "react";
 import {
   FormControl,
@@ -140,9 +139,14 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
     const {
       target: { value },
     } = event;
+    
     setSelectedCurrencies(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
+      typeof value === 'string'
+        ? value.split(',')
+        : value.map(option => {
+            // Convert from string back to object if necessary
+            return typeof option === 'string' ? JSON.parse(option) : option;
+          })
     );
   };
 
@@ -160,7 +164,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
         MenuProps={MenuProps}
       >
         {options.map((option) => (
-          <MenuItem key={option.value} value={option}>
+          <MenuItem key={option.value} value={JSON.stringify(option)}>
             <Checkbox checked={selectedCurrencies.some((selected) => selected.value === option.value)} />
             <ListItemText primary={option.label} />
           </MenuItem>
