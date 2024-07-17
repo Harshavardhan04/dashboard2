@@ -139,7 +139,9 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
     const {
       target: { value },
     } = event;
-    setSelectedCurrencies(value);
+
+    const updatedCurrencies = value.map((v) => (typeof v === 'string' ? JSON.parse(v) : v));
+    setSelectedCurrencies(updatedCurrencies);
   };
 
   const isSelected = (option) => selectedCurrencies.some((selected) => selected.value === option.value);
@@ -158,7 +160,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
         MenuProps={MenuProps}
       >
         {options.map((option) => (
-          <MenuItem key={option.value} value={option}>
+          <MenuItem key={option.value} value={JSON.stringify(option)}>
             <Checkbox checked={isSelected(option)} />
             <ListItemText primary={option.label} />
           </MenuItem>
