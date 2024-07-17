@@ -130,7 +130,7 @@ const MenuProps = {
   },
 };
 
-export default function CurrencySelector({ currencies, selectedCurrencies, setSelectedCurrencies }) {
+export default function CurrencySelector({ currencies = [], selectedCurrencies = [], setSelectedCurrencies }) {
   const handleChange = (event) => {
     const {
       target: { value },
