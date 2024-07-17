@@ -36,6 +36,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
       renderTags={(value, getTagProps) => (
         value.map((option, index) => (
           <Chip
+            key={option.value}
             variant="outlined"
             label={option.label}
             {...getTagProps({ index })}
