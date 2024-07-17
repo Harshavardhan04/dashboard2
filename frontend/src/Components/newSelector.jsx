@@ -112,16 +112,12 @@
 // };
 
 // export default CurrencySelector;
-import React from "react";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Checkbox,
-  ListItemText,
-  OutlinedInput
-} from "@mui/material";
+import React from 'react';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -134,40 +130,47 @@ const MenuProps = {
   },
 };
 
-const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }) => {
-  const handleCurrencyChange = (event) => {
+export default function CurrencySelector({ currencies, selectedCurrencies, setSelectedCurrencies }) {
+  const handleChange = (event) => {
     const {
       target: { value },
     } = event;
 
-    const updatedCurrencies = value.map((v) => (typeof v === 'string' ? JSON.parse(v) : v));
-    setSelectedCurrencies(updatedCurrencies);
+    // Prevent duplicates by creating a Set
+    const newSelected = new Set(selectedCurrencies.map(c => c.value));
+    
+    value.forEach(val => {
+      if (newSelected.has(val)) {
+        newSelected.delete(val);
+      } else {
+        newSelected.add(val);
+      }
+    });
+
+    setSelectedCurrencies(Array.from(newSelected).map(value => currencies.find(c => c.value === value)));
   };
 
-  const isSelected = (option) => selectedCurrencies.some((selected) => selected.value === option.value);
-
   return (
-    <FormControl sx={{ m: 1, width: 300 }}>
-      <InputLabel id="select-currencies-label">Select Currencies</InputLabel>
-      <Select
-        labelId="select-currencies-label"
-        id="select-currencies"
-        multiple
-        value={selectedCurrencies}
-        onChange={handleCurrencyChange}
-        input={<OutlinedInput label="Select Currencies" />}
-        renderValue={(selected) => selected.map((s) => s.label).join(', ')}
-        MenuProps={MenuProps}
-      >
-        {options.map((option) => (
-          <MenuItem key={option.value} value={JSON.stringify(option)}>
-            <Checkbox checked={isSelected(option)} />
-            <ListItemText primary={option.label} />
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+    <div>
+      <FormControl sx={{ m: 1, width: 300 }}>
+        <InputLabel id="currency-select-label">Select Currencies</InputLabel>
+        <Select
+          labelId="currency-select-label"
+          id="currency-select"
+          multiple
+          value={selectedCurrencies.map(currency => currency.value)}
+          onChange={handleChange}
+          input={<OutlinedInput label="Select Currencies" />}
+          renderValue={(selected) => selected.join(', ')}
+          MenuProps={MenuProps}
+        >
+          {currencies.map((currency) => (
+            <MenuItem key={currency.value} value={currency.value}>
+              {currency.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </div>
   );
-};
-
-export default CurrencySelector;
+}
