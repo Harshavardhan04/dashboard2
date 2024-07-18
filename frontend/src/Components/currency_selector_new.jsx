@@ -54,16 +54,20 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
         disableCloseOnSelect
         sx={{
           '& .MuiAutocomplete-tag': {
-            display: 'inline-flex',
+            display: 'flex',
+            flexWrap: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            flexDirection: 'row',
-            flexWrap: 'nowrap',
-            overflowX: 'auto',
             '& .MuiChip-root': {
               margin: 0.5,
             },
+          },
+          '& .MuiAutocomplete-endAdornment': {
+            display: 'none',
+          },
+          '& .MuiAutocomplete-popupIndicator': {
+            display: 'none',
           },
         }}
       />
