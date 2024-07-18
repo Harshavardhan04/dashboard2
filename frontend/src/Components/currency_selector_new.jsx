@@ -37,8 +37,11 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
             variant="outlined"
             label="Select Currencies"
             placeholder="Currencies"
-            sx={{ width: selectedCurrencies.length >= 5 ? 200 : 'auto', minWidth: 150 }}
             onClick={handlePopoverOpen}
+            sx={{
+              width: selectedCurrencies.length < 5 ? 'auto' : 200,
+              minWidth: 150,
+            }}
           />
         )}
         renderTags={(value, getTagProps) =>
