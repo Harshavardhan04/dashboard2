@@ -39,13 +39,14 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
             placeholder="Currencies"
             onClick={handlePopoverOpen}
             sx={{
-              width: selectedCurrencies.length < 5 ? 'auto' : 200,
+              width: 'auto',
               minWidth: 150,
+              flexWrap: 'nowrap'
             }}
           />
         )}
         renderTags={(value, getTagProps) =>
-          value.slice(0, 5).map((option, index) => (
+          value.map((option, index) => (
             <Chip
               key={option.value}
               variant="outlined"
@@ -59,7 +60,8 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
         sx={{
           display: 'flex',
           flexDirection: 'row',
-          flexWrap: 'wrap',
+          flexWrap: 'nowrap',
+          overflowX: 'auto',
           '& .MuiChip-root': {
             margin: 0.5,
           },
@@ -74,7 +76,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
           horizontal: 'left',
         }}
       >
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2, maxWidth: '300px' }}>
           <Typography variant="h6">Selected Currencies</Typography>
           {selectedCurrencies.map((currency, index) => (
             <Chip
