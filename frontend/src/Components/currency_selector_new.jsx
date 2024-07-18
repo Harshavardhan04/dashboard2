@@ -38,7 +38,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
             label="Select Currencies"
             placeholder="Currencies"
             sx={{ width: selectedCurrencies.length >= 5 ? 200 : 'auto', minWidth: 150 }}
-            onClick={selectedCurrencies.length >= 5 ? handlePopoverOpen : null}
+            onClick={handlePopoverOpen}
           />
         )}
         renderTags={(value, getTagProps) =>
@@ -48,7 +48,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
               variant="outlined"
               label={option.label}
               {...getTagProps({ index })}
-              onClick={selectedCurrencies.length >= 5 ? handlePopoverOpen : null}
+              onClick={handlePopoverOpen}
             />
           ))
         }
