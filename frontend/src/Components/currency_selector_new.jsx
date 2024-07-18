@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Autocomplete, TextField, Chip, Box, Popover, Typography } from '@mui/material';
+import { Autocomplete, TextField, Chip, Box, Popover, Typography, IconButton } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }) => {
   const [popupOpen, setPopupOpen] = useState(false);
@@ -37,22 +38,16 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
             variant="outlined"
             label="Select Currencies"
             placeholder="Currencies"
-            onClick={handlePopoverOpen}
-            sx={{
-              width: 'auto',
-              minWidth: 150,
-              flexWrap: 'nowrap'
-            }}
+            sx={{ minWidth: 200 }}
           />
         )}
         renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
+          value.slice(0, 5).map((option, index) => (
             <Chip
               key={option.value}
               variant="outlined"
               label={option.label}
               {...getTagProps({ index })}
-              onClick={handlePopoverOpen}
             />
           ))
         }
@@ -72,6 +67,11 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
           },
         }}
       />
+      {selectedCurrencies.length > 5 && (
+        <IconButton onClick={handlePopoverOpen} sx={{ ml: 1 }}>
+          <MoreHorizIcon />
+        </IconButton>
+      )}
       <Popover
         open={popupOpen}
         anchorEl={anchorEl}
@@ -92,7 +92,7 @@ const CurrencySelector = ({ options, selectedCurrencies, setSelectedCurrencies }
               onDelete={() => {
                 const newCurrencies = selectedCurrencies.filter((_, i) => i !== index);
                 setSelectedCurrencies(newCurrencies);
-                if (newCurrencies.length < 5) {
+                if (newCurrencies.length <= 5) {
                   handlePopoverClose();
                 }
               }}
