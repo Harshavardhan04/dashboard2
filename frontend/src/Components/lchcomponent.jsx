@@ -78,7 +78,7 @@ const GraphComponent = ({
       boostThreshold: 1,
     };
 
-    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine]);
+    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine, target]);
   };
 
   const getCurrencyColor = (currency) => {
@@ -189,18 +189,21 @@ const GraphComponent = ({
   };
 
   return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      options={chartOptions}
-      ref={chartRef}
-    />
+    <div style={{ maxHeight: '600px', overflow: 'hidden' }}>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={chartOptions}
+        ref={chartRef}
+        containerProps={{ style: { height: '100%' } }}
+      />
+    </div>
   );
 };
 
 export default GraphComponent;
 
 
-//lch notional
+//lch
 
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
@@ -310,6 +313,104 @@ const LCHNotional = () => {
   const rows = generateRows();
   const columns = generateColumns();
 
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.chart.update({
+        series: getData(),
+      });
+    }
+  }, [startDate, endDate, selectedCurrencies, data, isDarkMode, compareWithTarget]);
+
+  const getData = () => {
+    const filteredData = getFilteredData();
+    const compareData = selectedCurrencies.map((currency) => ({
+      name: currency.value,
+      data: filteredData.map((d) => [
+        new Date(d.Date).getTime(),
+        d[currency.value],
+      ]),
+      color: getCurrencyColor(currency.value),
+      marker: { enabled: false },
+      boostThreshold: 1,
+    }));
+
+    const totalLine = {
+      name: "Total",
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
+      color: isDarkMode ? "#ffffff" : "#000000",
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
+    const shadeData = {
+      name: "Shaded Area",
+      data: filteredData.map((d) => ({
+        x: new Date(d.Date).getTime(),
+        low: Math.min(d.Total, d.Target),
+        high: Math.max(d.Total, d.Target),
+      })),
+      type: "arearange",
+      lineWidth: 0,
+      color: "#228B22",
+      fillOpacity: 0.3,
+      zIndex: 0,
+      marker: { enabled: false },
+      boostThreshold: 1,
+    };
+
+    const target = {
+      name: "Target",
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
+      color: "#007bff",
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
+    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine, target]);
+  };
+
+  const getCurrencyColor = (currency) => {
+    const colors = {
+      AUD: "#ff6600",
+      EUR: "#28a745",
+      GBP: "#dc3545",
+      JPY: "#343a40",
+      USD: "#ffc107",
+      BRL: "#f16767",
+      CAD: "#00a5cf",
+      CHF: "#69c267",
+      CLP: "#9a67c2",
+      CNY: "#d3a1c5",
+      CZK: "#305d7b",
+      DKK: "#9e68a2",
+      HKD: "#778899",
+      HUF: "#7ccc67",
+      INR: "#2e4053",
+      KRW: "#5f9ea0",
+      MXN: "#4b0082",
+      NOK: "#ec704a",
+      NZD: "#9b59b6",
+      PLN: "#ff6f61",
+      SEK: "#00a99d",
+      SGD: "#ff6f91",
+      THB: "#1abc9c",
+      TWD: "#6495ed",
+      ZAR: "#dd5182",
+    };
+
+    return colors[currency] || "#000000";
+  };
+
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.chart.update({
+        series: getData(),
+      });
+    }
+  }, [startDate, endDate, selectedCurrencies, data, isDarkMode, compareWithTarget]);
+
   return (
     <>
       <div className="graph-container">
@@ -339,22 +440,57 @@ const LCHNotional = () => {
             compareWithTarget={compareWithTarget}
           />
         </div>
-        <div className="bottom-right-buttons">
-          <Button
-            sx={{
-              backgroundColor: '#AE1A1A',
-              color: '#FFF',
-              marginTop: '0.25vh',
-              width: '10vw',
-              ':hover': { backgroundColor: '#da5d5d' },
-              maxHeight: 'lg'
-            }}
-            onClick={() => setCompareWithTarget(!compareWithTarget)}
-          >
-            {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
-          </Button>
-          <ChartDownload chartRef={chartRef} />
+      </div>
+      {compareWithTarget && (
+        <div className="summary-box">
+          <div className="summary-content">
+            <span>
+              <strong>Total: </strong>
+              {formatNumber(data[data.length - 1]?.Total)}
+            </span>
+            <span>
+              <strong>Target: </strong>
+              {formatNumber(data[data.length - 1]?.Target)}
+            </span>
+            <span>
+              <strong>Difference: </strong>
+              {formatNumber(data[data.length - 1]?.Total - data[data.length - 1]?.Target)}
+            </span>
+            <span
+              className="dropdown-arrow"
+              onClick={() => setShowBreakdown(!showBreakdown)}
+              title="Show currency breakdown"
+            >
+              &#9660;
+            </span>
+            {showBreakdown && (
+              <div className="currency-breakdown">
+                {selectedCurrencies.map((currency) => (
+                  <div key={currency.value}>
+                    <strong>{currency.label}: </strong>
+                    {formatNumber(data[data.length - 1]?.[currency.value])}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+      )}
+      <div className="bottom-right-buttons">
+        <Button
+          sx={{
+            backgroundColor: "#AE1A1A",
+            color: "#fff",
+            marginTop: "0.25vh",
+            width: "10vw",
+            maxHeight: "lg",
+            "&:hover": { backgroundColor: "#da5d5d" },
+          }}
+          onClick={() => setCompareWithTarget(!compareWithTarget)}
+        >
+          {compareWithTarget ? "Disable Target Comparison" : "Enable Target Comparison"}
+        </Button>
+        <ChartDownload chartRef={chartRef} />
       </div>
 
       <div className="table-container">
