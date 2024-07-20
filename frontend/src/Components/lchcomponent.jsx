@@ -1,139 +1,24 @@
 //graph
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import HighchartsBoost from 'highcharts/modules/boost';
-import HighchartsExporting from 'highcharts/modules/exporting';
-import HighchartsAnnotations from 'highcharts/modules/annotations';
-import HighchartsMore from 'highcharts/highcharts-more';
-import { formatNumber } from '../../Utils/Utils';
 
-HighchartsBoost(Highcharts);
-HighchartsExporting(Highcharts);
-HighchartsAnnotations(Highcharts);
-HighchartsMore(Highcharts);
-
-const GraphComponent = ({
-  startDate,
-  endDate,
-  selectedCurrencies,
-  isDarkMode,
-  data
-}) => {
+const GraphComponent = ({ isDarkMode, data, startDate, endDate, selectedCurrencies }) => {
   const chartRef = useRef(null);
 
-  const getFilteredData = () => {
-    return data.filter((d) => {
-      const date = new Date(d.Date).getTime();
-      return date >= startDate.getTime() && date <= endDate.getTime();
-    });
-  };
-
-  const getData = () => {
-    const filteredData = getFilteredData();
-    const compareData = selectedCurrencies.map((currency) => ({
-      name: currency.value,
-      data: filteredData.map((d) => [
-        new Date(d.Date).getTime(),
-        d[currency.value]
-      ]),
-      color: getCurrencyColor(currency.value),
-      marker: { enabled: false },
-      boostThreshold: 1,
-    }));
-
-    const totalLine = {
-      name: "Total",
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
-      color: isDarkMode ? "#ffffff" : "#000000",
-      marker: { enabled: false },
-      zIndex: 1,
-      boostThreshold: 1,
-    };
-
-    const shadeData = {
-      name: "Shaded Area",
-      data: filteredData.map((d) => ({
-        x: new Date(d.Date).getTime(),
-        low: Math.min(d.Total, d.Target),
-        high: Math.max(d.Total, d.Target),
-      })),
-      type: "arearange",
-      lineWidth: 0,
-      color: "#228B22",
-      fillOpacity: 0.3,
-      zIndex: 0,
-      marker: { enabled: false },
-      boostThreshold: 1,
-    };
-
-    const target = {
-      name: "Target",
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
-      color: "#007bff",
-      marker: { enabled: false },
-      zIndex: 1,
-      boostThreshold: 1,
-    };
-
-    return compareData.concat([totalLine, shadeData, target]);
-  };
-
-  const getCurrencyColor = (currency) => {
-    const colors = {
-      AUD: "#ff6600",
-      EUR: "#28a745",
-      GBP: "#dc3545",
-      JPY: "#343a40",
-      USD: "#ffc107",
-      BRL: "#f16767",
-      CAD: "#00a5cf",
-      CHF: "#69c267",
-      CLP: "#9a67c2",
-      CNY: "#d3a1c5",
-      CZK: "#305d7b",
-      DKK: "#9e68a2",
-      HKD: "#778899",
-      HUF: "#7ccc67",
-      INR: "#2e4053",
-      KRW: "#5f9ea0",
-      MXN: "#4b0082",
-      NOK: "#ec704a",
-      NZD: "#9b59b6",
-      PLN: "#ff6f61",
-      SEK: "#00a99d",
-      SGD: "#ff6f91",
-      THB: "#1abc9c",
-      TWD: "#6495ed",
-      ZAR: "#dd5182",
-    };
-
-    return colors[currency] || "#000000";
-  };
-
-  useEffect(() => {
-    if (chartRef.current) {
-      chartRef.current.chart.update({
-        series: getData(),
-      });
-    }
-  }, [startDate, endDate, selectedCurrencies, data, isDarkMode]);
-
-  const chartOptions = {
+  const getOptions = () => ({
     chart: {
       type: 'line',
-      zoomType: 'x',
-      backgroundColor: isDarkMode ? '#2e2e2e' : '#fafafa',
-      plotBorderWidth: 1,
-      plotBorderColor: isDarkMode ? '#444444' : '#cccccc',
+      height: 600, // Ensure a fixed height
     },
     title: {
       text: 'LCH Notional | Time Series',
       style: {
         color: isDarkMode ? '#ffffff' : '#000000',
-        fontWeight: 'bold',
-      },
+        fontSize: '22px',
+        fontWeight: 'bold'
+      }
     },
     xAxis: {
       type: 'datetime',
@@ -141,62 +26,102 @@ const GraphComponent = ({
         text: 'Date',
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-          fontWeight: 'bold',
-        },
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }
       },
       labels: {
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-        },
-      },
-      lineColor: isDarkMode ? '#444444' : '#cccccc',
-      tickColor: isDarkMode ? '#444444' : '#cccccc',
+          fontSize: '12px'
+        }
+      }
     },
     yAxis: {
       title: {
         text: 'Notional (USD)',
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-          fontWeight: 'bold',
-        },
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }
       },
       labels: {
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-        },
+          fontSize: '12px'
+        }
       },
       gridLineColor: isDarkMode ? '#444444' : '#cccccc',
+      tickColor: isDarkMode ? '#444444' : '#cccccc',
+      lineColor: isDarkMode ? '#444444' : '#cccccc'
     },
-    legend: {
-      layout: 'horizontal',
-      align: 'center',
-      verticalAlign: 'bottom',
-      itemStyle: {
-        color: isDarkMode ? '#ffffff' : '#000000',
-        fontWeight: 'bold',
-      },
-    },
+    series: [
+      // Your series data
+    ],
     tooltip: {
       shared: true,
-      backgroundColor: isDarkMode ? '#333333' : '#ffffff',
-      borderColor: isDarkMode ? '#444444' : '#cccccc',
+      backgroundColor: isDarkMode ? 'rgba(33, 33, 33, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+      borderColor: isDarkMode ? '#666666' : '#cccccc',
       style: {
-        color: isDarkMode ? '#ffffff' : '#000000',
-      },
+        color: isDarkMode ? '#ffffff' : '#000000'
+      }
     },
-    series: getData(),
-  };
+    legend: {
+      itemStyle: {
+        color: isDarkMode ? '#ffffff' : '#000000',
+        fontSize: '14px',
+        fontWeight: 'bold'
+      }
+    },
+    credits: {
+      enabled: false
+    },
+    exporting: {
+      buttons: {
+        contextButton: {
+          symbolStroke: isDarkMode ? '#cccccc' : '#666666',
+          theme: {
+            fill: isDarkMode ? '#444444' : '#f0f0f0',
+            stroke: isDarkMode ? '#666666' : '#cccccc',
+            style: {
+              color: isDarkMode ? '#ffffff' : '#000000'
+            }
+          }
+        }
+      }
+    },
+    plotOptions: {
+      series: {
+        marker: {
+          enabled: false
+        },
+        events: {
+          load: function () {
+            this.xAxis[0].setExtremes(startDate.getTime(), endDate.getTime());
+          }
+        }
+      }
+    },
+    boost: {
+      useGPUTranslations: true,
+      usePreAllocated: true
+    }
+  });
 
-  return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      options={chartOptions}
-      ref={chartRef}
-    />
-  );
+  useEffect(() => {
+    if (chartRef.current) {
+      const chart = chartRef.current.chart;
+      chart.setSize(null, 600); // Ensure a fixed height on updates
+      chart.series[0].setData(data); // Update the chart data
+    }
+  }, [data]);
+
+  return <HighchartsReact highcharts={Highcharts} options={getOptions()} ref={chartRef} />;
 };
 
 export default GraphComponent;
+
 
 
 //lch
