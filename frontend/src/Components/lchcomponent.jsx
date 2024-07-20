@@ -127,14 +127,24 @@ export default GraphComponent;
 //lch
 
 import React, { useState, useEffect, useRef } from 'react';
-import CurrencySelector from '../../Components/xva/CurrencySelector';
-import DateSelectors from '../../Components/generic/DateSelectors';
-import Table from '../../Components/generic/GenericTable';
-import GraphComponent from '../../Components/xva/GraphComponent';
-import { formatNumber } from '../../Utils/Utils';
+import GraphComponent from '../Components/GraphComponent';
+import Highcharts from 'highcharts';
+import HighchartsBoost from 'highcharts/modules/boost';
+import HighchartsExporting from 'highcharts/modules/exporting';
+import HighchartsAnnotations from 'highcharts/modules/annotations';
+import HighchartsMore from 'highcharts/highcharts-more';
+import CurrencySelector from '../Components/xva/CurrencySelector';
+import DateSelectors from '../Components/generic/DateSelectors';
+import Table from '../Components/generic/GenericTable';
 import { Button } from '@mui/material';
-import ChartDownload from '../../Components/xva/ChartDownload';
-import '../../Styles/Graph.css';
+import ChartDownload from '../Components/xva/ChartDownload';
+import '../Styles/Graph.css';
+import { formatNumber } from '../Utils/Utils';
+
+HighchartsBoost(Highcharts);
+HighchartsExporting(Highcharts);
+HighchartsAnnotations(Highcharts);
+HighchartsMore(Highcharts);
 
 const LCHNotional = () => {
   const [compareWithTarget, setCompareWithTarget] = useState(false);
@@ -152,7 +162,6 @@ const LCHNotional = () => {
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
-  const latestSummaryRef = useRef('');
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -184,22 +193,77 @@ const LCHNotional = () => {
   useEffect(() => {
     if (loading && data.length > 0) {
       const updateSummary = () => {
+        const latestSummaryRef = useRef('');
         if (summary !== latestSummaryRef.current) {
           setSummary(latestSummaryRef.current);
         }
       };
+
       const interval = setInterval(updateSummary, 1000);
       return () => clearInterval(interval);
     }
   }, [loading, data, summary]);
 
-  const filteredData = getFilteredData();
+  const getData = () => {
+    const filteredData = getFilteredData();
+    const compareData = selectedCurrencies.map((currency) => ({
+      name: currency.value,
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d[currency.value]]),
+      color: getCurrencyColor(currency.value),
+      marker: { enabled: false },
+      boostThreshold: 1,
+    }));
+
+    const shadeData = {
+      name: 'Shaded Area',
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
+      type: 'arearange',
+      lineWidth: 0,
+      color: '#E283C9',
+      fillOpacity: 0.3,
+      zIndex: 0,
+      marker: { enabled: false },
+      boostThreshold: 1,
+    };
+
+    const totalLine = {
+      name: 'Total',
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
+      color: isDarkMode ? '#ffffff' : '#000000',
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
+    const targetLine = {
+      name: 'Target',
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
+      color: '#007bff',
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
+    return compareWithTarget ? [...compareData, shadeData, totalLine, targetLine] : [...compareData, totalLine];
+  };
+
+  const getCurrencyColor = (currency) => {
+    const colors = {
+      AUD: '#ff667f',
+      EUR: '#28a745',
+      GBP: '#dc3545',
+      JPY: '#343a40',
+      USD: '#ffc107',
+      // Add other colors as needed
+    };
+    return colors[currency] || '#000000';
+  };
 
   const generateColumns = () => {
     const baseColumns = [
       { field: 'id', headerName: 'ID', flex: 0.5, minWidth: 100 },
       { field: 'date', headerName: 'Date', flex: 1, minWidth: 120 },
-      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 }
+      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 },
     ];
 
     const currencyColumns = selectedCurrencies.map((currency) => ({
@@ -209,15 +273,11 @@ const LCHNotional = () => {
       minWidth: 150,
     }));
 
-    return [
-      ...baseColumns,
-      ...currencyColumns,
-      { field: 'total', headerName: 'Total', flex: 1.5, minWidth: 150 },
-    ];
+    return [...baseColumns, ...currencyColumns, { field: 'total', headerName: 'Total', flex: 1.5, minWidth: 150 }];
   };
 
   const generateRows = () => {
-    return filteredData.map((d, index) => {
+    return getFilteredData().map((d, index) => {
       const rowData = {
         id: index + 1,
         date: d.Date,
@@ -231,48 +291,53 @@ const LCHNotional = () => {
     });
   };
 
-  const rows = generateRows();
   const columns = generateColumns();
+  const rows = generateRows();
 
   return (
-    <>
-      <div className="graph-container">
-        <h2 className="graph-title">LCH Notional | Time Series</h2>
-        <div className="selectors-container">
-          <DateSelectors
-            startDate={startDate}
-            setStartDate={setStartDate}
-            endDate={endDate}
-            setEndDate={setEndDate}
-          />
-          <div className="currency-selector">
-            <CurrencySelector
-              options={options}
-              selectedCurrencies={selectedCurrencies}
-              setSelectedCurrencies={setSelectedCurrencies}
-            />
-          </div>
-        </div>
-        <div className="main-panel">
-          <GraphComponent
-            startDate={startDate}
-            endDate={endDate}
-            selectedCurrencies={selectedCurrencies}
-            isDarkMode={isDarkMode}
-            data={filteredData}
-          />
-        </div>
+    <div className="app-container">
+      <div className="selectors-container">
+        <DateSelectors
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+        />
+        <CurrencySelector
+          options={options}
+          selectedCurrencies={selectedCurrencies}
+          setSelectedCurrencies={setSelectedCurrencies}
+        />
       </div>
-
+      <div className="main-panel">
+        <GraphComponent
+          isDarkMode={isDarkMode}
+          data={data}
+          startDate={startDate}
+          endDate={endDate}
+          selectedCurrencies={selectedCurrencies}
+        />
+      </div>
+      <div className="bottom-right-buttons">
+        <Button
+          sx={{
+            backgroundColor: '#AE1A1A',
+            color: '#FFF',
+            marginTop: '0.25vh',
+            width: '10vw',
+            ':hover': { backgroundColor: '#da5d5d' },
+            maxHeight: 'lg'
+          }}
+          onClick={() => setCompareWithTarget(!compareWithTarget)}
+        >
+          {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
+        </Button>
+        <ChartDownload chartRef={chartRef} />
+      </div>
       <div className="table-container">
-        <h2 className="table-title">LCH Notional | Summary Table</h2>
-        <div className="data-grid-container">
-          <div className="data-grid-wrapper">
-            <Table rows={rows} columns={columns} loading={loading} />
-          </div>
-        </div>
+        <Table rows={rows} columns={columns} loading={loading} />
       </div>
-    </>
+    </div>
   );
 };
 
