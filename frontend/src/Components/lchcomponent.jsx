@@ -1,24 +1,140 @@
 //graph
 
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import HighchartsBoost from 'highcharts/modules/boost';
+import HighchartsExporting from 'highcharts/modules/exporting';
+import HighchartsAnnotations from 'highcharts/modules/annotations';
+import HighchartsMore from 'highcharts/highcharts-more';
+import { formatNumber } from '../../Utils/Utils';
 
-const GraphComponent = ({ isDarkMode, data, startDate, endDate, selectedCurrencies }) => {
+HighchartsBoost(Highcharts);
+HighchartsExporting(Highcharts);
+HighchartsAnnotations(Highcharts);
+HighchartsMore(Highcharts);
+
+const GraphComponent = ({
+  startDate,
+  endDate,
+  selectedCurrencies,
+  isDarkMode,
+  data,
+  compareWithTarget,
+}) => {
   const chartRef = useRef(null);
 
-  const getOptions = () => ({
+  const getFilteredData = () => {
+    return data.filter((d) => {
+      const date = new Date(d.Date).getTime();
+      return date >= startDate.getTime() && date <= endDate.getTime();
+    });
+  };
+
+  const getData = () => {
+    const filteredData = getFilteredData();
+    const compareData = selectedCurrencies.map((currency) => ({
+      name: currency.value,
+      data: filteredData.map((d) => [
+        new Date(d.Date).getTime(),
+        d[currency.value],
+      ]),
+      color: getCurrencyColor(currency.value),
+      marker: { enabled: false },
+      boostThreshold: 1,
+    }));
+
+    const totalLine = {
+      name: "Total",
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
+      color: isDarkMode ? "#ffffff" : "#000000",
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
+    const shadeData = {
+      name: "Shaded Area",
+      data: filteredData.map((d) => ({
+        x: new Date(d.Date).getTime(),
+        low: Math.min(d.Total, d.Target),
+        high: Math.max(d.Total, d.Target),
+      })),
+      type: "arearange",
+      lineWidth: 0,
+      color: "#228B22",
+      fillOpacity: 0.3,
+      zIndex: 0,
+      marker: { enabled: false },
+      boostThreshold: 1,
+    };
+
+    const target = {
+      name: "Target",
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
+      color: "#007bff",
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
+    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine]);
+  };
+
+  const getCurrencyColor = (currency) => {
+    const colors = {
+      AUD: "#ff6600",
+      EUR: "#28a745",
+      GBP: "#dc3545",
+      JPY: "#343a40",
+      USD: "#ffc107",
+      BRL: "#f16767",
+      CAD: "#00a5cf",
+      CHF: "#69c267",
+      CLP: "#9a67c2",
+      CNY: "#d3a1c5",
+      CZK: "#305d7b",
+      DKK: "#9e68a2",
+      HKD: "#778899",
+      HUF: "#7ccc67",
+      INR: "#2e4053",
+      KRW: "#5f9ea0",
+      MXN: "#4b0082",
+      NOK: "#ec704a",
+      NZD: "#9b59b6",
+      PLN: "#ff6f61",
+      SEK: "#00a99d",
+      SGD: "#ff6f91",
+      THB: "#1abc9c",
+      TWD: "#6495ed",
+      ZAR: "#dd5182",
+    };
+
+    return colors[currency] || "#000000";
+  };
+
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.chart.update({
+        series: getData(),
+      });
+    }
+  }, [startDate, endDate, selectedCurrencies, data, isDarkMode, compareWithTarget]);
+
+  const chartOptions = {
     chart: {
       type: 'line',
-      height: 600, // Ensure a fixed height
+      zoomType: 'x',
+      backgroundColor: isDarkMode ? '#2e2e2e' : '#fafafa',
+      plotBorderWidth: 1,
+      plotBorderColor: isDarkMode ? '#444444' : '#cccccc',
     },
     title: {
       text: 'LCH Notional | Time Series',
       style: {
         color: isDarkMode ? '#ffffff' : '#000000',
-        fontSize: '22px',
-        fontWeight: 'bold'
-      }
+        fontWeight: 'bold',
+      },
     },
     xAxis: {
       type: 'datetime',
@@ -26,125 +142,75 @@ const GraphComponent = ({ isDarkMode, data, startDate, endDate, selectedCurrenci
         text: 'Date',
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }
+          fontWeight: 'bold',
+        },
       },
       labels: {
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-          fontSize: '12px'
-        }
-      }
+        },
+      },
+      lineColor: isDarkMode ? '#444444' : '#cccccc',
+      tickColor: isDarkMode ? '#444444' : '#cccccc',
     },
     yAxis: {
       title: {
         text: 'Notional (USD)',
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }
+          fontWeight: 'bold',
+        },
       },
       labels: {
         style: {
           color: isDarkMode ? '#cccccc' : '#000000',
-          fontSize: '12px'
-        }
+        },
       },
       gridLineColor: isDarkMode ? '#444444' : '#cccccc',
-      tickColor: isDarkMode ? '#444444' : '#cccccc',
-      lineColor: isDarkMode ? '#444444' : '#cccccc'
-    },
-    series: [
-      // Your series data
-    ],
-    tooltip: {
-      shared: true,
-      backgroundColor: isDarkMode ? 'rgba(33, 33, 33, 0.85)' : 'rgba(255, 255, 255, 0.85)',
-      borderColor: isDarkMode ? '#666666' : '#cccccc',
-      style: {
-        color: isDarkMode ? '#ffffff' : '#000000'
-      }
     },
     legend: {
+      layout: 'horizontal',
+      align: 'center',
+      verticalAlign: 'bottom',
       itemStyle: {
         color: isDarkMode ? '#ffffff' : '#000000',
-        fontSize: '14px',
-        fontWeight: 'bold'
-      }
+        fontWeight: 'bold',
+      },
     },
-    credits: {
-      enabled: false
+    tooltip: {
+      shared: true,
+      backgroundColor: isDarkMode ? '#333333' : '#ffffff',
+      borderColor: isDarkMode ? '#444444' : '#cccccc',
+      style: {
+        color: isDarkMode ? '#ffffff' : '#000000',
+      },
     },
-    exporting: {
-      buttons: {
-        contextButton: {
-          symbolStroke: isDarkMode ? '#cccccc' : '#666666',
-          theme: {
-            fill: isDarkMode ? '#444444' : '#f0f0f0',
-            stroke: isDarkMode ? '#666666' : '#cccccc',
-            style: {
-              color: isDarkMode ? '#ffffff' : '#000000'
-            }
-          }
-        }
-      }
-    },
-    plotOptions: {
-      series: {
-        marker: {
-          enabled: false
-        },
-        events: {
-          load: function () {
-            this.xAxis[0].setExtremes(startDate.getTime(), endDate.getTime());
-          }
-        }
-      }
-    },
-    boost: {
-      useGPUTranslations: true,
-      usePreAllocated: true
-    }
-  });
+    series: getData(),
+  };
 
-  useEffect(() => {
-    if (chartRef.current) {
-      const chart = chartRef.current.chart;
-      chart.setSize(null, 600); // Ensure a fixed height on updates
-      chart.series[0].setData(data); // Update the chart data
-    }
-  }, [data]);
-
-  return <HighchartsReact highcharts={Highcharts} options={getOptions()} ref={chartRef} />;
+  return (
+    <HighchartsReact
+      highcharts={Highcharts}
+      options={chartOptions}
+      ref={chartRef}
+    />
+  );
 };
 
 export default GraphComponent;
 
 
-
-//lch
+//lch notional
 
 import React, { useState, useEffect, useRef } from 'react';
-import GraphComponent from '../Components/GraphComponent';
-import Highcharts from 'highcharts';
-import HighchartsBoost from 'highcharts/modules/boost';
-import HighchartsExporting from 'highcharts/modules/exporting';
-import HighchartsAnnotations from 'highcharts/modules/annotations';
-import HighchartsMore from 'highcharts/highcharts-more';
-import CurrencySelector from '../Components/xva/CurrencySelector';
-import DateSelectors from '../Components/generic/DateSelectors';
-import Table from '../Components/generic/GenericTable';
+import CurrencySelector from '../../Components/xva/CurrencySelector';
+import DateSelectors from '../../Components/generic/DateSelectors';
+import Table from '../../Components/generic/GenericTable';
+import GraphComponent from '../../Components/xva/GraphComponent';
+import { formatNumber } from '../../Utils/Utils';
 import { Button } from '@mui/material';
-import ChartDownload from '../Components/xva/ChartDownload';
-import '../Styles/Graph.css';
-import { formatNumber } from '../Utils/Utils';
-
-HighchartsBoost(Highcharts);
-HighchartsExporting(Highcharts);
-HighchartsAnnotations(Highcharts);
-HighchartsMore(Highcharts);
+import ChartDownload from '../../Components/xva/ChartDownload';
+import '../../Styles/Graph.css';
 
 const LCHNotional = () => {
   const [compareWithTarget, setCompareWithTarget] = useState(false);
@@ -162,6 +228,7 @@ const LCHNotional = () => {
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const latestSummaryRef = useRef('');
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -193,77 +260,22 @@ const LCHNotional = () => {
   useEffect(() => {
     if (loading && data.length > 0) {
       const updateSummary = () => {
-        const latestSummaryRef = useRef('');
         if (summary !== latestSummaryRef.current) {
           setSummary(latestSummaryRef.current);
         }
       };
-
       const interval = setInterval(updateSummary, 1000);
       return () => clearInterval(interval);
     }
   }, [loading, data, summary]);
 
-  const getData = () => {
-    const filteredData = getFilteredData();
-    const compareData = selectedCurrencies.map((currency) => ({
-      name: currency.value,
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d[currency.value]]),
-      color: getCurrencyColor(currency.value),
-      marker: { enabled: false },
-      boostThreshold: 1,
-    }));
-
-    const shadeData = {
-      name: 'Shaded Area',
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
-      type: 'arearange',
-      lineWidth: 0,
-      color: '#E283C9',
-      fillOpacity: 0.3,
-      zIndex: 0,
-      marker: { enabled: false },
-      boostThreshold: 1,
-    };
-
-    const totalLine = {
-      name: 'Total',
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
-      color: isDarkMode ? '#ffffff' : '#000000',
-      marker: { enabled: false },
-      zIndex: 1,
-      boostThreshold: 1,
-    };
-
-    const targetLine = {
-      name: 'Target',
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
-      color: '#007bff',
-      marker: { enabled: false },
-      zIndex: 1,
-      boostThreshold: 1,
-    };
-
-    return compareWithTarget ? [...compareData, shadeData, totalLine, targetLine] : [...compareData, totalLine];
-  };
-
-  const getCurrencyColor = (currency) => {
-    const colors = {
-      AUD: '#ff667f',
-      EUR: '#28a745',
-      GBP: '#dc3545',
-      JPY: '#343a40',
-      USD: '#ffc107',
-      // Add other colors as needed
-    };
-    return colors[currency] || '#000000';
-  };
+  const filteredData = getFilteredData();
 
   const generateColumns = () => {
     const baseColumns = [
       { field: 'id', headerName: 'ID', flex: 0.5, minWidth: 100 },
       { field: 'date', headerName: 'Date', flex: 1, minWidth: 120 },
-      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 },
+      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 }
     ];
 
     const currencyColumns = selectedCurrencies.map((currency) => ({
@@ -273,11 +285,15 @@ const LCHNotional = () => {
       minWidth: 150,
     }));
 
-    return [...baseColumns, ...currencyColumns, { field: 'total', headerName: 'Total', flex: 1.5, minWidth: 150 }];
+    return [
+      ...baseColumns,
+      ...currencyColumns,
+      { field: 'total', headerName: 'Total', flex: 1.5, minWidth: 150 },
+    ];
   };
 
   const generateRows = () => {
-    return getFilteredData().map((d, index) => {
+    return filteredData.map((d, index) => {
       const rowData = {
         id: index + 1,
         date: d.Date,
@@ -291,53 +307,65 @@ const LCHNotional = () => {
     });
   };
 
-  const columns = generateColumns();
   const rows = generateRows();
+  const columns = generateColumns();
 
   return (
-    <div className="app-container">
-      <div className="selectors-container">
-        <DateSelectors
-          startDate={startDate}
-          setStartDate={setStartDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-        />
-        <CurrencySelector
-          options={options}
-          selectedCurrencies={selectedCurrencies}
-          setSelectedCurrencies={setSelectedCurrencies}
-        />
+    <>
+      <div className="graph-container">
+        <h2 className="graph-title">LCH Notional | Time Series</h2>
+        <div className="selectors-container">
+          <DateSelectors
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+          />
+          <div className="currency-selector">
+            <CurrencySelector
+              options={options}
+              selectedCurrencies={selectedCurrencies}
+              setSelectedCurrencies={setSelectedCurrencies}
+            />
+          </div>
+        </div>
+        <div className="main-panel">
+          <GraphComponent
+            startDate={startDate}
+            endDate={endDate}
+            selectedCurrencies={selectedCurrencies}
+            isDarkMode={isDarkMode}
+            data={filteredData}
+            compareWithTarget={compareWithTarget}
+          />
+        </div>
+        <div className="bottom-right-buttons">
+          <Button
+            sx={{
+              backgroundColor: '#AE1A1A',
+              color: '#FFF',
+              marginTop: '0.25vh',
+              width: '10vw',
+              ':hover': { backgroundColor: '#da5d5d' },
+              maxHeight: 'lg'
+            }}
+            onClick={() => setCompareWithTarget(!compareWithTarget)}
+          >
+            {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
+          </Button>
+          <ChartDownload chartRef={chartRef} />
+        </div>
       </div>
-      <div className="main-panel">
-        <GraphComponent
-          isDarkMode={isDarkMode}
-          data={data}
-          startDate={startDate}
-          endDate={endDate}
-          selectedCurrencies={selectedCurrencies}
-        />
-      </div>
-      <div className="bottom-right-buttons">
-        <Button
-          sx={{
-            backgroundColor: '#AE1A1A',
-            color: '#FFF',
-            marginTop: '0.25vh',
-            width: '10vw',
-            ':hover': { backgroundColor: '#da5d5d' },
-            maxHeight: 'lg'
-          }}
-          onClick={() => setCompareWithTarget(!compareWithTarget)}
-        >
-          {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
-        </Button>
-        <ChartDownload chartRef={chartRef} />
-      </div>
+
       <div className="table-container">
-        <Table rows={rows} columns={columns} loading={loading} />
+        <h2 className="table-title">LCH Notional | Summary Table</h2>
+        <div className="data-grid-container">
+          <div className="data-grid-wrapper">
+            <Table rows={rows} columns={columns} loading={loading} />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
