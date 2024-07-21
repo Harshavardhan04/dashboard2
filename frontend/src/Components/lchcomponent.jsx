@@ -1,5 +1,4 @@
 //graph
-
 import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -118,7 +117,7 @@ const GraphComponent = ({
   };
 
   useEffect(() => {
-    if (chartRef.current) {
+    if (chartRef.current && chartRef.current.chart) {
       chartRef.current.chart.update({
         series: getData(),
       });
@@ -126,7 +125,7 @@ const GraphComponent = ({
   }, [startDate, endDate, selectedCurrencies, data, isDarkMode]);
 
   useEffect(() => {
-    if (chartRef.current && compareWithTarget) {
+    if (chartRef.current && chartRef.current.chart && compareWithTarget) {
       const chart = chartRef.current.chart;
 
       const handleMouseOver = (e) => {
@@ -277,6 +276,7 @@ const GraphComponent = ({
 };
 
 export default GraphComponent;
+
 
 
 //lch
