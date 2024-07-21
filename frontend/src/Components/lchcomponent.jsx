@@ -1,5 +1,5 @@
 //graph
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -20,9 +20,10 @@ const GraphComponent = ({
   isDarkMode,
   data,
   compareWithTarget,
-  setSummary,
+  setSummary
 }) => {
   const chartRef = useRef(null);
+  const latestSummaryRef = useRef('');
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -37,7 +38,7 @@ const GraphComponent = ({
       name: currency.value,
       data: filteredData.map((d) => [
         new Date(d.Date).getTime(),
-        d[currency.value],
+        d[currency.value]
       ]),
       color: getCurrencyColor(currency.value),
       marker: { enabled: false },
@@ -45,24 +46,24 @@ const GraphComponent = ({
     }));
 
     const totalLine = {
-      name: 'Total',
+      name: "Total",
       data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
-      color: isDarkMode ? '#ffffff' : '#000000',
+      color: isDarkMode ? "#ffffff" : "#000000",
       marker: { enabled: false },
       zIndex: 1,
       boostThreshold: 1,
     };
 
     const shadeData = {
-      name: 'Shaded Area',
+      name: "Shaded Area",
       data: filteredData.map((d) => ({
         x: new Date(d.Date).getTime(),
         low: Math.min(d.Total, d.Target),
         high: Math.max(d.Total, d.Target),
       })),
-      type: 'arearange',
+      type: "arearange",
       lineWidth: 0,
-      color: '#228B22',
+      color: "#228B22",
       fillOpacity: 0.3,
       zIndex: 0,
       marker: { enabled: false },
@@ -70,9 +71,9 @@ const GraphComponent = ({
     };
 
     const target = {
-      name: 'Target',
+      name: "Target",
       data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
-      color: '#007bff',
+      color: "#007bff",
       marker: { enabled: false },
       zIndex: 1,
       boostThreshold: 1,
@@ -83,34 +84,34 @@ const GraphComponent = ({
 
   const getCurrencyColor = (currency) => {
     const colors = {
-      AUD: '#ff6600',
-      EUR: '#28a745',
-      GBP: '#dc3545',
-      JPY: '#343a40',
-      USD: '#ffc107',
-      BRL: '#f16767',
-      CAD: '#00a5cf',
-      CHF: '#69c267',
-      CLP: '#9a67c2',
-      CNY: '#d3a1c5',
-      CZK: '#305d7b',
-      DKK: '#9e68a2',
-      HKD: '#778899',
-      HUF: '#7ccc67',
-      INR: '#2e4053',
-      KRW: '#5f9ea0',
-      MXN: '#4b0082',
-      NOK: '#ec704a',
-      NZD: '#9b59b6',
-      PLN: '#ff6f61',
-      SEK: '#00a99d',
-      SGD: '#ff6f91',
-      THB: '#1abc9c',
-      TWD: '#6495ed',
-      ZAR: '#dd5182',
+      AUD: "#ff6600",
+      EUR: "#28a745",
+      GBP: "#dc3545",
+      JPY: "#343a40",
+      USD: "#ffc107",
+      BRL: "#f16767",
+      CAD: "#00a5cf",
+      CHF: "#69c267",
+      CLP: "#9a67c2",
+      CNY: "#d3a1c5",
+      CZK: "#305d7b",
+      DKK: "#9e68a2",
+      HKD: "#778899",
+      HUF: "#7ccc67",
+      INR: "#2e4053",
+      KRW: "#5f9ea0",
+      MXN: "#4b0082",
+      NOK: "#ec704a",
+      NZD: "#9b59b6",
+      PLN: "#ff6f61",
+      SEK: "#00a99d",
+      SGD: "#ff6f91",
+      THB: "#1abc9c",
+      TWD: "#6495ed",
+      ZAR: "#dd5182",
     };
 
-    return colors[currency] || '#000000';
+    return colors[currency] || "#000000";
   };
 
   useEffect(() => {
@@ -123,6 +124,8 @@ const GraphComponent = ({
 
   useEffect(() => {
     if (chartRef.current && compareWithTarget) {
+      const chart = chartRef.current.chart;
+
       const handleMouseOver = (e) => {
         const points = e.target.series.chart.hoverPoints || [e.target];
         let targetValue = null;
@@ -163,21 +166,13 @@ const GraphComponent = ({
         setSummary(summaryHTML);
       };
 
-      Highcharts.addEvent(
-        chartRef.current.chart.container,
-        'mousemove',
-        handleMouseOver
-      );
+      chart.container.addEventListener('mousemove', handleMouseOver);
 
       return () => {
-        Highcharts.removeEvent(
-          chartRef.current.chart.container,
-          'mousemove',
-          handleMouseOver
-        );
+        chart.container.removeEventListener('mousemove', handleMouseOver);
       };
     }
-  }, [compareWithTarget, selectedCurrencies]);
+  }, [compareWithTarget, selectedCurrencies, setSummary]);
 
   const chartOptions = {
     chart: {
