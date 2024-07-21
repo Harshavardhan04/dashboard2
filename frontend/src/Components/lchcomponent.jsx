@@ -19,11 +19,7 @@ const GraphComponent = ({
   selectedCurrencies,
   isDarkMode,
   data,
-  compareWithTarget,
-  summary,
-  setSummary,
-  showBreakdown,
-  setShowBreakdown,
+  compareWithTarget
 }) => {
   const chartRef = useRef(null);
 
@@ -211,38 +207,6 @@ const GraphComponent = ({
     series: getData(),
   };
 
-  useEffect(() => {
-    const handleMouseOver = (e) => {
-      const points = chartRef.current?.chart.series.map(series => series.data).flat().filter(point => point.state === 'hover');
-      if (points.length > 0) {
-        const totalValue = points.find(point => point.series.name === 'Total').y;
-        const targetValue = points.find(point => point.series.name === 'Target').y;
-        const difference = totalValue - targetValue;
-        const totalBreakdown = selectedCurrencies.map(currency => {
-          const point = points.find(point => point.series.name === currency.value);
-          return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
-        }).join('<br>');
-
-        const summaryHTML = `<strong>Total:</strong> ${formatNumber(totalValue)}<br>
-          <strong>Target:</strong> ${formatNumber(targetValue)}<br>
-          <strong>Difference:</strong> ${formatNumber(difference)}<br>
-          <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}`;
-
-        setSummary(summaryHTML);
-      }
-    };
-
-    if (chartRef.current) {
-      chartRef.current.container.addEventListener('mouseover', handleMouseOver);
-    }
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.container.removeEventListener('mouseover', handleMouseOver);
-      }
-    };
-  }, [selectedCurrencies, setSummary]);
-
   return (
     <div className="chart-container">
       <HighchartsReact
@@ -250,36 +214,11 @@ const GraphComponent = ({
         options={chartOptions}
         ref={chartRef}
       />
-      {compareWithTarget && (
-        <div className="summary-box">
-          <div className="summary-content">
-            <span>
-              <strong>Total:</strong> {summary && parseFloat(summary.split("<strong>Total:</strong> ")[1].split("<br>")[0])}
-            </span>
-            <span>
-              <strong>Target:</strong> {summary && parseFloat(summary.split("<strong>Target:</strong> ")[1].split("<br>")[0])}
-            </span>
-            <span>
-              <strong>Difference:</strong> {summary && parseFloat(summary.split("<strong>Difference:</strong> ")[1].split("<br>")[0])}
-            </span>
-            <span>
-              <strong>Breakdown of Selected Currencies:</strong>
-              {showBreakdown && (
-                <div dangerouslySetInnerHTML={{ __html: summary && summary.split("<br><br>")[1] }} />
-              )}
-            </span>
-            <span className="dropdown-arrow" onClick={() => setShowBreakdown(!showBreakdown)}>
-              {showBreakdown ? "▲" : "▼"}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 export default GraphComponent;
-
 
 
 
