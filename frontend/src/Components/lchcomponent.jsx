@@ -24,6 +24,8 @@ const GraphComponent = ({
   data,
   compareWithTarget,
   setCompareWithTarget,
+  summary,
+  setSummary
 }) => {
   const chartRef = useRef(null);
   const latestSummaryRef = useRef('');
@@ -243,17 +245,17 @@ const GraphComponent = ({
         <div className="summary-box">
           <div className="summary-content">
             <span>
-              <strong>Total:</strong> {formatNumber(parseFloat(summary.split("Total: ")[1].split("<br>")[0]))}
+              <strong>Total:</strong> {summary && parseFloat(summary.split("Total: ")[1].split("<br>")[0])}
             </span>
             <span>
-              <strong>Target:</strong> {formatNumber(parseFloat(summary.split("Target: ")[1].split("<br>")[0]))}
+              <strong>Target:</strong> {summary && parseFloat(summary.split("Target: ")[1].split("<br>")[0])}
             </span>
             <span>
-              <strong>Difference:</strong> {formatNumber(parseFloat(summary.split("Difference: ")[1].split("<br>")[0]))}
+              <strong>Difference:</strong> {summary && parseFloat(summary.split("Difference: ")[1].split("<br>")[0])}
             </span>
             <span>
               <strong>Breakdown of Selected Currencies:</strong>
-              <div dangerouslySetInnerHTML={{ __html: summary.split("<br><br>")[1] }} />
+              <div dangerouslySetInnerHTML={{ __html: summary && summary.split("<br><br>")[1] }} />
             </span>
           </div>
         </div>
@@ -282,6 +284,7 @@ export default GraphComponent;
 
 
 //lch
+
 
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
@@ -436,3 +439,4 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
+
