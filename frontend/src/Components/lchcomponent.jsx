@@ -1,6 +1,6 @@
 //graph
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -23,11 +23,10 @@ const GraphComponent = ({
   isDarkMode,
   data,
   compareWithTarget,
-  setCompareWithTarget,
-  summary,
-  setSummary
+  setCompareWithTarget
 }) => {
   const chartRef = useRef(null);
+  const [summary, setSummary] = useState('');
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -83,7 +82,7 @@ const GraphComponent = ({
       boostThreshold: 1,
     };
 
-    return compareWithTarget ? [...compareData, totalLine, target, shadeData] : [...compareData, totalLine, target];
+    return compareWithTarget ? [...compareData, totalLine, target, shadeData] : [...compareData, totalLine];
   };
 
   const getCurrencyColor = (currency) => {
@@ -213,31 +212,6 @@ const GraphComponent = ({
     series: getData(),
   };
 
-  const handleMouseOver = (e) => {
-    if (chartRef.current) {
-      const chart = chartRef.current.chart;
-      const point = chart.series[0].searchPoint(e, true);
-
-      if (point) {
-        const date = Highcharts.dateFormat('%A, %b %e, %Y', point.x);
-        const total = Highcharts.numberFormat(chart.series.find(s => s.name === 'Total').data.find(d => d.x === point.x).y, 0);
-        const target = Highcharts.numberFormat(chart.series.find(s => s.name === 'Target').data.find(d => d.x === point.x).y, 0);
-        const difference = Highcharts.numberFormat(total - target, 0);
-
-        let breakdown = '';
-        chart.series.forEach(series => {
-          if (series.name !== 'Total' && series.name !== 'Target') {
-            const value = Highcharts.numberFormat(series.data.find(d => d.x === point.x).y, 0);
-            breakdown += `<strong>${series.name}:</strong> ${value}<br>`;
-          }
-        });
-
-        const summaryHTML = `<strong>Date:</strong> ${date}<br><strong>Total:</strong> ${total}<br><strong>Target:</strong> ${target}<br><strong>Difference:</strong> ${difference}<br><strong>Breakdown of Selected Currencies:</strong><br>${breakdown}`;
-        setSummary(summaryHTML);
-      }
-    }
-  };
-
   return (
     <div className="graph-section">
       <div className="graph-buttons">
@@ -246,7 +220,7 @@ const GraphComponent = ({
         </Button>
         <ChartDownload chartRef={chartRef} />
       </div>
-      <div className="chart-container" onMouseMove={handleMouseOver}>
+      <div className="chart-container">
         <HighchartsReact
           highcharts={Highcharts}
           options={chartOptions}
@@ -261,6 +235,7 @@ const GraphComponent = ({
 };
 
 export default GraphComponent;
+
 
 
 //lch2
@@ -398,3 +373,4 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
+
