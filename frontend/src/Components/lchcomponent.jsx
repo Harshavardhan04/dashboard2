@@ -222,9 +222,12 @@ import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
 import GraphComponent from '../../Components/xva/GraphComponent';
 import { formatNumber } from '../../Utils/Utils';
+import { Button } from '@mui/material';
+import ChartDownload from '../../Components/xva/ChartDownload';
 import '../../Styles/Graph.css';
 
 const LCHNotional = () => {
+  const [compareWithTarget, setCompareWithTarget] = useState(false);
   const [selectedCurrencies, setSelectedCurrencies] = useState([
     { value: 'AUD', label: 'AUD' },
     { value: 'EUR', label: 'EUR' },
@@ -232,11 +235,15 @@ const LCHNotional = () => {
     { value: 'JPY', label: 'JPY' },
     { value: 'USD', label: 'USD' },
   ]);
+  const [summary, setSummary] = useState('');
   const [startDate, setStartDate] = useState(new Date('2018-06-01'));
   const [endDate, setEndDate] = useState(new Date('2024-06-25'));
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const latestSummaryRef = useRef('');
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -259,6 +266,22 @@ const LCHNotional = () => {
       return date >= startDate.getTime() && date <= endDate.getTime();
     });
   };
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  useEffect(() => {
+    if (loading && data.length > 0) {
+      const updateSummary = () => {
+        if (summary !== latestSummaryRef.current) {
+          setSummary(latestSummaryRef.current);
+        }
+      };
+      const interval = setInterval(updateSummary, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [loading, data, summary]);
 
   const filteredData = getFilteredData();
 
@@ -327,7 +350,32 @@ const LCHNotional = () => {
             selectedCurrencies={selectedCurrencies}
             isDarkMode={isDarkMode}
             data={filteredData}
+            compareWithTarget={compareWithTarget}
           />
+          {compareWithTarget && (
+            <div className="summary-box">
+              <div className="summary-content">
+                <span>
+                  <strong>Total:</strong> {summary && parseFloat(summary.split("<strong>Total:</strong> ")[1].split("<br>")[0])}
+                </span>
+                <span>
+                  <strong>Target:</strong> {summary && parseFloat(summary.split("<strong>Target:</strong> ")[1].split("<br>")[0])}
+                </span>
+                <span>
+                  <strong>Difference:</strong> {summary && parseFloat(summary.split("<strong>Difference:</strong> ")[1].split("<br>")[0])}
+                </span>
+                <span>
+                  <strong>Breakdown of Selected Currencies:</strong>
+                  {showBreakdown && (
+                    <div dangerouslySetInnerHTML={{ __html: summary && summary.split("<br><br>")[1] }} />
+                  )}
+                </span>
+                <span className="dropdown-arrow" onClick={() => setShowBreakdown(!showBreakdown)}>
+                  {showBreakdown ? "▲" : "▼"}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -339,113 +387,24 @@ const LCHNotional = () => {
           </div>
         </div>
       </div>
+      <div className="bottom-right-buttons">
+        <Button
+          sx={{
+            backgroundColor: "#AE1A1A",
+            color: "#FFF",
+            marginTop: "0.25vh",
+            width: "10vw",
+            maxHeight: "lg",
+            "&:hover": { backgroundColor: "#da5d5d" },
+          }}
+          onClick={() => setCompareWithTarget(!compareWithTarget)}
+        >
+          {compareWithTarget ? "Disable Target Comparison" : "Enable Target Comparison"}
+        </Button>
+        <ChartDownload chartRef={chartRef} />
+      </div>
     </>
   );
 };
 
 export default LCHNotional;
-
-
-
-if (targetValue != null && totalValue != null) {
-  const difference = totalValue - targetValue;
-  const totalBreakdown = selectedCurrencies
-    .map((currency) => {
-      const point = points.find((p) => p.series.name === currency.value);
-      return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
-    })
-    .join('<br>');
-
-  summaryHTML = `
-    Total: ${formatNumber(totalValue)}<br>
-    Target: ${formatNumber(targetValue)}<br>
-    Difference: ${formatNumber(difference)}<br>
-    Breakdown of Selected Currencies:<br>${totalBreakdown}
-  `;
-
-  latestSummaryRef.current = summaryHTML;
-  console.log("summary html is ", summaryHTML);
-  setSummary(summaryHTML);
-  console.log(summary);
-}
-
-
-{compareWithTarget && (
-  <div className="summary-box">
-    <div className="summary-content">
-      <span>
-        <strong>Total:</strong> {summary && summary.match(/Total: ([\d,]+)/)?.[1]}
-      </span>
-      <span>
-        <strong>Target:</strong> {summary && summary.match(/Target: ([\d,]+)/)?.[1]}
-      </span>
-      <span>
-        <strong>Difference:</strong> {summary && summary.match(/Difference: ([\d,-]+)/)?.[1]}
-      </span>
-      <span>
-        <strong>Breakdown of Selected Currencies:</strong>
-        <div dangerouslySetInnerHTML={{ __html: summary && summary.split('Breakdown of Selected Currencies:<br>')[1] }} />
-      </span>
-    </div>
-  </div>
-)}
-
-
-
-//new
-
-if (targetValue != null && totalValue != null) {
-  const difference = totalValue - targetValue;
-  const totalBreakdown = selectedCurrencies
-    .map((currency) => {
-      const point = points.find((p) => p.series.name === currency.value);
-      return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
-    })
-    .join('<br>');
-
-  summaryHTML = `
-    Total: ${formatNumber(totalValue)}<br>
-    Target: ${formatNumber(targetValue)}<br>
-    Difference: ${formatNumber(difference)}<br>
-    Breakdown of Selected Currencies:<br>${totalBreakdown}
-  `;
-
-  latestSummaryRef.current = summaryHTML;
-  console.log("summary html is ", summaryHTML);
-  setSummary(summaryHTML);
-  console.log(summary);
-}
-
-
-const [showBreakdown, setShowBreakdown] = useState(false);
-
-{compareWithTarget && (
-  <div className="summary-box">
-    <div className="summary-content">
-      <span>
-        <strong>Total:</strong> {summary && summary.match(/Total: ([\d,]+)/)?.[1]}
-      </span>
-      <span>
-        <strong>Target:</strong> {summary && summary.match(/Target: ([\d,]+)/)?.[1]}
-      </span>
-      <span>
-        <strong>Difference:</strong> {summary && summary.match(/Difference: ([\d,-]+)/)?.[1]}
-      </span>
-      <span>
-        <strong>Breakdown of Selected Currencies:</strong>
-        <span 
-          className="dropdown-arrow" 
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          title={showBreakdown ? 'Hide currency breakdown' : 'Show currency breakdown'}
-          style={{ cursor: 'pointer' }}
-        >
-          &#9660;
-        </span>
-        {showBreakdown && (
-          <div dangerouslySetInnerHTML={{ __html: summary && summary.split('Breakdown of Selected Currencies:<br>')[1] }} />
-        )}
-      </span>
-    </div>
-  </div>
-)}
-
