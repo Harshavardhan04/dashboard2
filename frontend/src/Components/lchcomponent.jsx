@@ -1,5 +1,5 @@
 //graph 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -7,8 +7,6 @@ import HighchartsExporting from 'highcharts/modules/exporting';
 import HighchartsAnnotations from 'highcharts/modules/annotations';
 import HighchartsMore from 'highcharts/highcharts-more';
 import { formatNumber } from '../../Utils/Utils';
-import { Button } from '@mui/material';
-import ChartDownload from '../../Components/xva/ChartDownload';
 
 HighchartsBoost(Highcharts);
 HighchartsExporting(Highcharts);
@@ -20,13 +18,10 @@ const GraphComponent = ({
   endDate,
   selectedCurrencies,
   isDarkMode,
-  data
+  data,
+  compareWithTarget
 }) => {
   const chartRef = useRef(null);
-  const [summary, setSummary] = useState('');
-  const [compareWithTarget, setCompareWithTarget] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const latestSummaryRef = useRef('');
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -57,6 +52,15 @@ const GraphComponent = ({
       boostThreshold: 1,
     };
 
+    const target = {
+      name: "Target",
+      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
+      color: "#007bff",
+      marker: { enabled: false },
+      zIndex: 1,
+      boostThreshold: 1,
+    };
+
     const shadeData = {
       name: "Shaded Area",
       data: filteredData.map((d) => ({
@@ -73,16 +77,7 @@ const GraphComponent = ({
       boostThreshold: 1,
     };
 
-    const target = {
-      name: "Target",
-      data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
-      color: "#007bff",
-      marker: { enabled: false },
-      zIndex: 1,
-      boostThreshold: 1,
-    };
-
-    return compareData.concat([totalLine, shadeData, target]);
+    return compareWithTarget ? [...compareData, totalLine, target, shadeData] : [...compareData, totalLine, target];
   };
 
   const getCurrencyColor = (currency) => {
@@ -123,51 +118,7 @@ const GraphComponent = ({
         series: getData(),
       });
     }
-  }, [startDate, endDate, selectedCurrencies, data, isDarkMode]);
-
-  const handleMouseOver = (e) => {
-    const points = e.target.series.chart.hoverPoints || [];
-    let totalValue = null;
-    let targetValue = null;
-
-    points.forEach((point) => {
-      if (point.series.name === 'Total') {
-        totalValue = point.y;
-      } else if (point.series.name === 'Target') {
-        targetValue = point.y;
-      }
-    });
-
-    if (totalValue !== null && targetValue !== null) {
-      const difference = totalValue - targetValue;
-
-      const totalBreakdown = selectedCurrencies.map((currency) => {
-        const point = points.find(p => p.series.name === currency.value);
-        return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
-      }).join('<br>');
-
-      const summaryHTML = `
-        <strong>Total:</strong> ${formatNumber(totalValue)}<br>
-        <strong>Target:</strong> ${formatNumber(targetValue)}<br>
-        <strong>Difference:</strong> ${formatNumber(difference)}<br>
-        <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}
-      `;
-
-      setSummary(summaryHTML);
-      latestSummaryRef.current = summaryHTML;
-    }
-  };
-
-  useEffect(() => {
-    if (chartRef.current) {
-      const chart = chartRef.current.chart;
-      chart.container.addEventListener('mouseover', handleMouseOver);
-
-      return () => {
-        chart.container.removeEventListener('mouseover', handleMouseOver);
-      };
-    }
-  }, [selectedCurrencies]);
+  }, [startDate, endDate, selectedCurrencies, data, isDarkMode, compareWithTarget]);
 
   const chartOptions = {
     chart: {
@@ -233,78 +184,35 @@ const GraphComponent = ({
         color: isDarkMode ? '#ffffff' : '#000000',
       },
       formatter: function () {
-        const points = this.points;
-        let totalValue = null;
-        let targetValue = null;
+        let s = `<strong>Date:</strong> ${Highcharts.dateFormat('%A, %b %e, %Y', this.x)}<br>`;
+        s += `<strong>Total:</strong> ${Highcharts.numberFormat(this.points.find(p => p.series.name === 'Total').y, 0)}<br>`;
+        s += `<strong>Target:</strong> ${Highcharts.numberFormat(this.points.find(p => p.series.name === 'Target').y, 0)}<br>`;
+        s += `<strong>Difference:</strong> ${Highcharts.numberFormat(this.points.find(p => p.series.name === 'Total').y - this.points.find(p => p.series.name === 'Target').y, 0)}<br>`;
+        s += '<strong>Breakdown of Selected Currencies:</strong><br>';
 
-        points.forEach((point) => {
-          if (point.series.name === 'Total') {
-            totalValue = point.y;
-          } else if (point.series.name === 'Target') {
-            targetValue = point.y;
+        this.points.forEach(point => {
+          if (point.series.name !== 'Total' && point.series.name !== 'Target') {
+            s += `<strong>${point.series.name}:</strong> ${Highcharts.numberFormat(point.y, 0)}<br>`;
           }
         });
 
-        if (totalValue !== null && targetValue !== null) {
-          const difference = totalValue - targetValue;
-
-          const totalBreakdown = selectedCurrencies.map((currency) => {
-            const point = points.find(p => p.series.name === currency.value);
-            return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
-          }).join('<br>');
-
-          const summaryHTML = `
-            <strong>Total:</strong> ${formatNumber(totalValue)}<br>
-            <strong>Target:</strong> ${formatNumber(targetValue)}<br>
-            <strong>Difference:</strong> ${formatNumber(difference)}<br>
-            <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}
-          `;
-
-          setSummary(summaryHTML);
-          latestSummaryRef.current = summaryHTML;
-        }
-
-        return this.points.reduce((s, point) => {
-          return s + `<br/><span style="color:${point.series.color}">\u25CF</span> ${point.series.name}: <b>${formatNumber(point.y)}</b>`;
-        }, '');
+        return s;
       }
     },
     series: getData(),
   };
 
   return (
-    <>
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={chartOptions}
-        ref={chartRef}
-      />
-      {compareWithTarget && (
-        <div className="summary-box">
-          <div className="summary-content" dangerouslySetInnerHTML={{ __html: summary }} />
-        </div>
-      )}
-      <div className="bottom-right-buttons">
-        <Button
-          sx={{
-            backgroundColor: "#AE1A1A",
-            color: "#fff",
-            marginTop: "0.25vh",
-            width: "10vw",
-            maxHeight: "lg",
-            '&:hover': { backgroundColor: "#da5d5d" },
-          }}
-          onClick={() => setCompareWithTarget(!compareWithTarget)}
-        >
-          {compareWithTarget ? "Disable Target Comparison" : "Enable Target Comparison"}
-        </Button>
-        <ChartDownload chartRef={chartRef} />
-      </div>
-    </>
+    <HighchartsReact
+      highcharts={Highcharts}
+      options={chartOptions}
+      ref={chartRef}
+    />
   );
 };
 
 export default GraphComponent;
+
 
 
 //lch
