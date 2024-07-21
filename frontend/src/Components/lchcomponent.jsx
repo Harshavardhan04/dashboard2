@@ -1,5 +1,6 @@
-//graph
-import React, { useEffect, useRef, useState } from 'react';
+//graph 
+
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -20,10 +21,10 @@ const GraphComponent = ({
   endDate,
   selectedCurrencies,
   isDarkMode,
-  data
+  data,
+  compareWithTarget,
+  setCompareWithTarget,
 }) => {
-  const [compareWithTarget, setCompareWithTarget] = useState(false);
-  const [summary, setSummary] = useState('');
   const chartRef = useRef(null);
   const latestSummaryRef = useRef('');
 
@@ -117,64 +118,12 @@ const GraphComponent = ({
   };
 
   useEffect(() => {
-    if (chartRef.current && chartRef.current.chart) {
+    if (chartRef.current) {
       chartRef.current.chart.update({
         series: getData(),
       });
     }
   }, [startDate, endDate, selectedCurrencies, data, isDarkMode]);
-
-  useEffect(() => {
-    if (chartRef.current && chartRef.current.chart && compareWithTarget) {
-      const chart = chartRef.current.chart;
-
-      const handleMouseOver = (e) => {
-        const points = e.target.series.chart.hoverPoints || [e.target];
-        let targetValue = null;
-        let totalValue = null;
-
-        points.forEach((point) => {
-          if (point.series.name === 'Target') {
-            targetValue = point.y;
-          } else if (point.series.name === 'Total') {
-            totalValue = point.y;
-          }
-        });
-
-        let difference = null;
-        if (targetValue !== null && totalValue !== null) {
-          difference = totalValue - targetValue;
-        }
-
-        const totalBreakdown = selectedCurrencies
-          .map((currency) => {
-            const point = points.find(
-              (p) => p.series.name === currency.value
-            );
-            return point
-              ? `<strong>${currency.value}</strong>: ${formatNumber(point.y)}`
-              : `<strong>${currency.value}</strong>: N/A`;
-          })
-          .join('<br>');
-
-        const summaryHTML = `
-          <strong>Total</strong>: ${formatNumber(totalValue)}<br>
-          <strong>Target</strong>: ${formatNumber(targetValue)}<br>
-          <strong>Difference</strong>: ${formatNumber(difference)}<br><br>
-          <strong>Breakdown of Selected Currencies</strong>:<br>${totalBreakdown}
-        `;
-
-        latestSummaryRef.current = summaryHTML;
-        setSummary(summaryHTML);
-      };
-
-      chart.container.addEventListener('mousemove', handleMouseOver);
-
-      return () => {
-        chart.container.removeEventListener('mousemove', handleMouseOver);
-      };
-    }
-  }, [compareWithTarget, selectedCurrencies]);
 
   const chartOptions = {
     chart: {
@@ -183,6 +132,11 @@ const GraphComponent = ({
       backgroundColor: isDarkMode ? '#2e2e2e' : '#fafafa',
       plotBorderWidth: 1,
       plotBorderColor: isDarkMode ? '#444444' : '#cccccc',
+      events: {
+        load: function () {
+          this.xAxis[0].setExtremes(startDate.getTime(), endDate.getTime());
+        }
+      }
     },
     title: {
       text: 'LCH Notional | Time Series',
@@ -239,31 +193,76 @@ const GraphComponent = ({
       style: {
         color: isDarkMode ? '#ffffff' : '#000000',
       },
+      formatter: function () {
+        const points = this.points;
+        let targetValue = null;
+        let totalValue = null;
+        let summaryHTML = '';
+
+        points.forEach((point) => {
+          if (point.series.name === 'Target') {
+            targetValue = point.y;
+          } else if (point.series.name === 'Total') {
+            totalValue = point.y;
+          }
+        });
+
+        if (targetValue != null && totalValue != null) {
+          const difference = totalValue - targetValue;
+          const totalBreakdown = selectedCurrencies
+            .map((currency) => {
+              const point = points.find((p) => p.series.name === currency.value);
+              return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
+            })
+            .join('<br>');
+
+          summaryHTML = `<strong>Total:</strong> ${formatNumber(totalValue)}<br>
+            <strong>Target:</strong> ${formatNumber(targetValue)}<br>
+            <strong>Difference:</strong> ${formatNumber(difference)}<br>
+            <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}`;
+
+          latestSummaryRef.current = summaryHTML;
+        }
+
+        return points.reduce((s, point) => {
+          return s + `<br><span style="color:${point.series.color}">${point.series.name}</span>: <b>${Highcharts.dateFormat('%A, %b %e, %Y', this.x)}</b>: ${formatNumber(point.y)}`;
+        }, '');
+      },
     },
     series: getData(),
   };
 
   return (
-    <div>
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={chartOptions}
-        ref={chartRef}
-      />
+    <>
+      <div className="chart-container" onMouseOver={(e) => {
+        if (e.target.closest('.highcharts-point') && chartRef.current) {
+          const chart = chartRef.current.chart;
+          const point = chart.hoverPoint;
+          if (point) {
+            chart.tooltip.refresh(point);
+          }
+        }
+      }}>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={chartOptions}
+          ref={chartRef}
+        />
+      </div>
       {compareWithTarget && (
         <div className="summary-box">
-          <div className="summary-content" dangerouslySetInnerHTML={{ __html: summary }} />
+          <div className="summary-content" dangerouslySetInnerHTML={{ __html: latestSummaryRef.current }} />
         </div>
       )}
       <div className="bottom-right-buttons">
         <Button
           sx={{
             backgroundColor: '#AE1A1A',
-            color: '#fff',
+            color: '#FFF',
             marginTop: '0.25vh',
             width: '10vw',
             maxHeight: 'lg',
-            '&:hover': { backgroundColor: '#da5d5d' }
+            '&:hover': { backgroundColor: '#da5d5d' },
           }}
           onClick={() => setCompareWithTarget(!compareWithTarget)}
         >
@@ -271,7 +270,7 @@ const GraphComponent = ({
         </Button>
         <ChartDownload chartRef={chartRef} />
       </div>
-    </div>
+    </>
   );
 };
 
@@ -279,7 +278,8 @@ export default GraphComponent;
 
 
 
-//lch
+//lch page
+
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
@@ -289,6 +289,7 @@ import { formatNumber } from '../../Utils/Utils';
 import '../../Styles/Graph.css';
 
 const LCHNotional = () => {
+  const [compareWithTarget, setCompareWithTarget] = useState(false);
   const [selectedCurrencies, setSelectedCurrencies] = useState([
     { value: 'AUD', label: 'AUD' },
     { value: 'EUR', label: 'EUR' },
@@ -296,11 +297,15 @@ const LCHNotional = () => {
     { value: 'JPY', label: 'JPY' },
     { value: 'USD', label: 'USD' },
   ]);
+  const [summary, setSummary] = useState('');
   const [startDate, setStartDate] = useState(new Date('2018-06-01'));
   const [endDate, setEndDate] = useState(new Date('2024-06-25'));
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const latestSummaryRef = useRef('');
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -323,6 +328,22 @@ const LCHNotional = () => {
       return date >= startDate.getTime() && date <= endDate.getTime();
     });
   };
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  useEffect(() => {
+    if (loading && data.length > 0) {
+      const updateSummary = () => {
+        if (summary !== latestSummaryRef.current) {
+          setSummary(latestSummaryRef.current);
+        }
+      };
+      const interval = setInterval(updateSummary, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [loading, data, summary]);
 
   const filteredData = getFilteredData();
 
@@ -391,6 +412,8 @@ const LCHNotional = () => {
             selectedCurrencies={selectedCurrencies}
             isDarkMode={isDarkMode}
             data={filteredData}
+            compareWithTarget={compareWithTarget}
+            setCompareWithTarget={setCompareWithTarget}
           />
         </div>
       </div>
@@ -408,4 +431,3 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
-
