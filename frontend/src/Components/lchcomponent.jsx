@@ -8,6 +8,7 @@ import HighchartsAnnotations from 'highcharts/modules/annotations';
 import HighchartsMore from 'highcharts/highcharts-more';
 import { formatNumber } from '../../Utils/Utils';
 import { Button } from '@mui/material';
+import ChartDownload from '../../Components/xva/ChartDownload';
 
 HighchartsBoost(Highcharts);
 HighchartsExporting(Highcharts);
@@ -19,7 +20,7 @@ const GraphComponent = ({
   endDate,
   selectedCurrencies,
   isDarkMode,
-  data,
+  data
 }) => {
   const [compareWithTarget, setCompareWithTarget] = useState(false);
   const [summary, setSummary] = useState('');
@@ -289,19 +290,17 @@ export default GraphComponent;
 
 
 
+
 //lch
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
-import GraphComponent from '../../Components/xva/GraphComponent';
+import GraphComponent from '../../Components/xva/Graph';
 import { formatNumber } from '../../Utils/Utils';
-import { Button } from '@mui/material';
-import ChartDownload from '../../Components/xva/ChartDownload';
 import '../../Styles/Graph.css';
 
 const LCHNotional = () => {
-  const [compareWithTarget, setCompareWithTarget] = useState(false);
   const [selectedCurrencies, setSelectedCurrencies] = useState([
     { value: 'AUD', label: 'AUD' },
     { value: 'EUR', label: 'EUR' },
@@ -317,7 +316,6 @@ const LCHNotional = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const latestSummaryRef = useRef('');
-  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -363,7 +361,7 @@ const LCHNotional = () => {
     const baseColumns = [
       { field: 'id', headerName: 'ID', flex: 0.5, minWidth: 100 },
       { field: 'date', headerName: 'Date', flex: 1, minWidth: 120 },
-      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 },
+      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 }
     ];
 
     const currencyColumns = selectedCurrencies.map((currency) => ({
@@ -424,32 +422,7 @@ const LCHNotional = () => {
             selectedCurrencies={selectedCurrencies}
             isDarkMode={isDarkMode}
             data={filteredData}
-            compareWithTarget={compareWithTarget}
-            setSummary={setSummary}
           />
-        </div>
-        {compareWithTarget && (
-          <div className="summary-box">
-            <div className="summary-content">
-              <div dangerouslySetInnerHTML={{ __html: summary }} />
-            </div>
-          </div>
-        )}
-        <div className="bottom-right-buttons">
-          <Button
-            sx={{
-              backgroundColor: '#AE1A1A',
-              color: '#FFF',
-              marginTop: '0.25vh',
-              width: '10vw',
-              maxHeight: 'lg',
-              '&:hover': { backgroundColor: '#da5d5d' },
-            }}
-            onClick={() => setCompareWithTarget(!compareWithTarget)}
-          >
-            {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
-          </Button>
-          <ChartDownload chartRef={chartRef} />
         </div>
       </div>
 
