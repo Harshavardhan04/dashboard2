@@ -1,5 +1,6 @@
-//graph 
-import React, { useEffect, useRef, useState } from 'react';
+//graph
+
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -22,10 +23,11 @@ const GraphComponent = ({
   isDarkMode,
   data,
   compareWithTarget,
+  setCompareWithTarget,
+  summary,
   setSummary
 }) => {
   const chartRef = useRef(null);
-  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -261,10 +263,8 @@ const GraphComponent = ({
 export default GraphComponent;
 
 
-
-
-//lch
-import React, { useState, useEffect, useRef } from 'react';
+//lch2
+import React, { useState, useEffect } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
@@ -378,6 +378,8 @@ const LCHNotional = () => {
             isDarkMode={isDarkMode}
             data={filteredData}
             compareWithTarget={compareWithTarget}
+            setCompareWithTarget={setCompareWithTarget}
+            summary={summary}
             setSummary={setSummary}
           />
         </div>
