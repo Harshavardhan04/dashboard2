@@ -80,7 +80,7 @@ const GraphComponent = ({
       boostThreshold: 1,
     };
 
-    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine]);
+    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine, target]);
   };
 
   const getCurrencyColor = (currency) => {
@@ -243,7 +243,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
-import GraphComponent from '../../Components/xva/GraphComponent';
+import GraphComponent from '../../Components/xva/Graph';
 import { formatNumber } from '../../Utils/Utils';
 import { Button } from '@mui/material';
 import ChartDownload from '../../Components/xva/ChartDownload';
@@ -293,18 +293,6 @@ const LCHNotional = () => {
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
-
-  useEffect(() => {
-    if (loading && data.length > 0) {
-      const updateSummary = () => {
-        if (summary !== latestSummaryRef.current) {
-          setSummary(latestSummaryRef.current);
-        }
-      };
-      const interval = setInterval(updateSummary, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [loading, data, summary]);
 
   const filteredData = getFilteredData();
 
@@ -397,7 +385,6 @@ const LCHNotional = () => {
         </Button>
         <ChartDownload chartRef={chartRef} />
       </div>
-
       <div className="table-container">
         <h2 className="table-title">LCH Notional | Summary Table</h2>
         <div className="data-grid-container">
@@ -411,3 +398,4 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
+
