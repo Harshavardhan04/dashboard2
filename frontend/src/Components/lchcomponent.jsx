@@ -166,10 +166,18 @@ const GraphComponent = ({
         setSummary(summaryHTML);
       };
 
-      chart.container.addEventListener('mousemove', handleMouseOver);
+      chart.series.forEach((series) => {
+        series.points.forEach((point) => {
+          point.on('mouseOver', handleMouseOver);
+        });
+      });
 
       return () => {
-        chart.container.removeEventListener('mousemove', handleMouseOver);
+        chart.series.forEach((series) => {
+          series.points.forEach((point) => {
+            point.off('mouseOver', handleMouseOver);
+          });
+        });
       };
     }
   }, [compareWithTarget, selectedCurrencies, setSummary]);
@@ -251,6 +259,7 @@ const GraphComponent = ({
 };
 
 export default GraphComponent;
+
 
 
 
