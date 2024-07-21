@@ -1,6 +1,5 @@
 //graph
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -24,7 +23,6 @@ const GraphComponent = ({
   setSummary,
 }) => {
   const chartRef = useRef(null);
-  const [hoveredPoint, setHoveredPoint] = useState(null);
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -47,24 +45,24 @@ const GraphComponent = ({
     }));
 
     const totalLine = {
-      name: "Total",
+      name: 'Total',
       data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Total]),
-      color: isDarkMode ? "#ffffff" : "#000000",
+      color: isDarkMode ? '#ffffff' : '#000000',
       marker: { enabled: false },
       zIndex: 1,
       boostThreshold: 1,
     };
 
     const shadeData = {
-      name: "Shaded Area",
+      name: 'Shaded Area',
       data: filteredData.map((d) => ({
         x: new Date(d.Date).getTime(),
         low: Math.min(d.Total, d.Target),
         high: Math.max(d.Total, d.Target),
       })),
-      type: "arearange",
+      type: 'arearange',
       lineWidth: 0,
-      color: "#228B22",
+      color: '#228B22',
       fillOpacity: 0.3,
       zIndex: 0,
       marker: { enabled: false },
@@ -72,47 +70,47 @@ const GraphComponent = ({
     };
 
     const target = {
-      name: "Target",
+      name: 'Target',
       data: filteredData.map((d) => [new Date(d.Date).getTime(), d.Target]),
-      color: "#007bff",
+      color: '#007bff',
       marker: { enabled: false },
       zIndex: 1,
       boostThreshold: 1,
     };
 
-    return compareWithTarget ? compareData.concat([totalLine, shadeData, target]) : compareData.concat([totalLine, target]);
+    return compareData.concat([totalLine, shadeData, target]);
   };
 
   const getCurrencyColor = (currency) => {
     const colors = {
-      AUD: "#ff6600",
-      EUR: "#28a745",
-      GBP: "#dc3545",
-      JPY: "#343a40",
-      USD: "#ffc107",
-      BRL: "#f16767",
-      CAD: "#00a5cf",
-      CHF: "#69c267",
-      CLP: "#9a67c2",
-      CNY: "#d3a1c5",
-      CZK: "#305d7b",
-      DKK: "#9e68a2",
-      HKD: "#778899",
-      HUF: "#7ccc67",
-      INR: "#2e4053",
-      KRW: "#5f9ea0",
-      MXN: "#4b0082",
-      NOK: "#ec704a",
-      NZD: "#9b59b6",
-      PLN: "#ff6f61",
-      SEK: "#00a99d",
-      SGD: "#ff6f91",
-      THB: "#1abc9c",
-      TWD: "#6495ed",
-      ZAR: "#dd5182",
+      AUD: '#ff6600',
+      EUR: '#28a745',
+      GBP: '#dc3545',
+      JPY: '#343a40',
+      USD: '#ffc107',
+      BRL: '#f16767',
+      CAD: '#00a5cf',
+      CHF: '#69c267',
+      CLP: '#9a67c2',
+      CNY: '#d3a1c5',
+      CZK: '#305d7b',
+      DKK: '#9e68a2',
+      HKD: '#778899',
+      HUF: '#7ccc67',
+      INR: '#2e4053',
+      KRW: '#5f9ea0',
+      MXN: '#4b0082',
+      NOK: '#ec704a',
+      NZD: '#9b59b6',
+      PLN: '#ff6f61',
+      SEK: '#00a99d',
+      SGD: '#ff6f91',
+      THB: '#1abc9c',
+      TWD: '#6495ed',
+      ZAR: '#dd5182',
     };
 
-    return colors[currency] || "#000000";
+    return colors[currency] || '#000000';
   };
 
   useEffect(() => {
@@ -121,21 +119,65 @@ const GraphComponent = ({
         series: getData(),
       });
     }
-  }, [startDate, endDate, selectedCurrencies, data, isDarkMode, compareWithTarget]);
+  }, [startDate, endDate, selectedCurrencies, data, isDarkMode]);
 
   useEffect(() => {
-    if (hoveredPoint) {
-      const total = hoveredPoint.total;
-      const target = hoveredPoint.target;
-      const difference = total - target;
-      const currencyBreakdown = selectedCurrencies.map((currency) => {
-        const value = hoveredPoint[currency.value];
-        return `${currency.label}: ${formatNumber(value)}`;
-      }).join(', ');
+    if (chartRef.current && compareWithTarget) {
+      const handleMouseOver = (e) => {
+        const points = e.target.series.chart.hoverPoints || [e.target];
+        let targetValue = null;
+        let totalValue = null;
 
-      setSummary(`Total: ${formatNumber(total)}, Target: ${formatNumber(target)}, Difference: ${formatNumber(difference)}, ${currencyBreakdown}`);
+        points.forEach((point) => {
+          if (point.series.name === 'Target') {
+            targetValue = point.y;
+          } else if (point.series.name === 'Total') {
+            totalValue = point.y;
+          }
+        });
+
+        let difference = null;
+        if (targetValue !== null && totalValue !== null) {
+          difference = totalValue - targetValue;
+        }
+
+        const totalBreakdown = selectedCurrencies
+          .map((currency) => {
+            const point = points.find(
+              (p) => p.series.name === currency.value
+            );
+            return point
+              ? `<strong>${currency.value}</strong>: ${formatNumber(point.y)}`
+              : `<strong>${currency.value}</strong>: N/A`;
+          })
+          .join('<br>');
+
+        const summaryHTML = `
+          <strong>Total</strong>: ${formatNumber(totalValue)}<br>
+          <strong>Target</strong>: ${formatNumber(targetValue)}<br>
+          <strong>Difference</strong>: ${formatNumber(difference)}<br><br>
+          <strong>Breakdown of Selected Currencies</strong>:<br>${totalBreakdown}
+        `;
+
+        latestSummaryRef.current = summaryHTML;
+        setSummary(summaryHTML);
+      };
+
+      Highcharts.addEvent(
+        chartRef.current.chart.container,
+        'mousemove',
+        handleMouseOver
+      );
+
+      return () => {
+        Highcharts.removeEvent(
+          chartRef.current.chart.container,
+          'mousemove',
+          handleMouseOver
+        );
+      };
     }
-  }, [hoveredPoint, selectedCurrencies, setSummary]);
+  }, [compareWithTarget, selectedCurrencies]);
 
   const chartOptions = {
     chart: {
@@ -144,24 +186,6 @@ const GraphComponent = ({
       backgroundColor: isDarkMode ? '#2e2e2e' : '#fafafa',
       plotBorderWidth: 1,
       plotBorderColor: isDarkMode ? '#444444' : '#cccccc',
-      events: {
-        load: function () {
-          this.series.forEach(series => {
-            series.points.forEach(point => {
-              point.on('mouseOver', function () {
-                setHoveredPoint({
-                  total: point.y,
-                  target: point.series.chart.series.find(s => s.name === 'Target').data.find(d => d.x === point.x).y,
-                  ...selectedCurrencies.reduce((acc, currency) => {
-                    acc[currency.value] = point.series.chart.series.find(s => s.name === currency.value).data.find(d => d.x === point.x).y;
-                    return acc;
-                  }, {})
-                });
-              });
-            });
-          });
-        }
-      }
     },
     title: {
       text: 'LCH Notional | Time Series',
@@ -223,18 +247,16 @@ const GraphComponent = ({
   };
 
   return (
-    <div style={{ maxHeight: '600px', overflow: 'hidden' }}>
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={chartOptions}
-        ref={chartRef}
-        containerProps={{ style: { height: '100%' } }}
-      />
-    </div>
+    <HighchartsReact
+      highcharts={Highcharts}
+      options={chartOptions}
+      ref={chartRef}
+    />
   );
 };
 
 export default GraphComponent;
+
 
 
 
@@ -243,7 +265,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
-import GraphComponent from '../../Components/xva/Graph';
+import GraphComponent from '../../Components/xva/GraphComponent';
 import { formatNumber } from '../../Utils/Utils';
 import { Button } from '@mui/material';
 import ChartDownload from '../../Components/xva/ChartDownload';
@@ -294,13 +316,25 @@ const LCHNotional = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+  useEffect(() => {
+    if (loading && data.length > 0) {
+      const updateSummary = () => {
+        if (summary !== latestSummaryRef.current) {
+          setSummary(latestSummaryRef.current);
+        }
+      };
+      const interval = setInterval(updateSummary, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [loading, data, summary]);
+
   const filteredData = getFilteredData();
 
   const generateColumns = () => {
     const baseColumns = [
       { field: 'id', headerName: 'ID', flex: 0.5, minWidth: 100 },
       { field: 'date', headerName: 'Date', flex: 1, minWidth: 120 },
-      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 }
+      { field: 'target', headerName: 'Target', flex: 1.5, minWidth: 150 },
     ];
 
     const currencyColumns = selectedCurrencies.map((currency) => ({
@@ -365,26 +399,33 @@ const LCHNotional = () => {
             setSummary={setSummary}
           />
         </div>
+        {compareWithTarget && (
+          <div className="summary-box">
+            <div className="summary-content">
+              <div>Total: {summary.total}</div>
+              <div>Target: {summary.target}</div>
+              <div>Difference: {summary.difference}</div>
+            </div>
+          </div>
+        )}
+        <div className="bottom-right-buttons">
+          <Button
+            sx={{
+              backgroundColor: '#AE1A1A',
+              color: '#FFF',
+              marginTop: '0.25vh',
+              width: '10vw',
+              maxHeight: 'lg',
+              '&:hover': { backgroundColor: '#da5d5d' },
+            }}
+            onClick={() => setCompareWithTarget(!compareWithTarget)}
+          >
+            {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
+          </Button>
+          <ChartDownload chartRef={chartRef} />
+        </div>
       </div>
-      <div className="summary-box">
-        {summary}
-      </div>
-      <div className="bottom-right-buttons">
-        <Button
-          sx={{
-            backgroundColor: "#AE1A1A",
-            color: "#FFF",
-            marginTop: "0.25vh",
-            width: "10vw",
-            maxHeight: "lg",
-            ":hover": { backgroundColor: "#da5d5d" },
-          }}
-          onClick={() => setCompareWithTarget(!compareWithTarget)}
-        >
-          {compareWithTarget ? "Disable Target Comparison" : "Enable Target Comparison"}
-        </Button>
-        <ChartDownload chartRef={chartRef} />
-      </div>
+
       <div className="table-container">
         <h2 className="table-title">LCH Notional | Summary Table</h2>
         <div className="data-grid-container">
