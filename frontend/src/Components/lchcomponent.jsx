@@ -1,6 +1,7 @@
-//graph
+//graph 
 
-import React, { useEffect, useRef } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -22,13 +23,11 @@ const GraphComponent = ({
   selectedCurrencies,
   isDarkMode,
   data,
-  compareWithTarget,
-  setCompareWithTarget,
-  summary,
-  setSummary
 }) => {
-  const chartRef = useRef(null);
+  const [compareWithTarget, setCompareWithTarget] = useState(false);
+  const [summary, setSummary] = useState('');
   const latestSummaryRef = useRef('');
+  const chartRef = useRef(null);
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -224,6 +223,7 @@ const GraphComponent = ({
             <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}`;
 
           latestSummaryRef.current = summaryHTML;
+          setSummary(summaryHTML);
         }
 
         return points.reduce((s, point) => {
@@ -264,7 +264,7 @@ const GraphComponent = ({
         <Button
           sx={{
             backgroundColor: "#AE1A1A",
-            color: "#FFF",
+            color: "#fff",
             marginTop: "0.25vh",
             width: "10vw",
             maxHeight: "lg",
@@ -282,10 +282,7 @@ const GraphComponent = ({
 
 export default GraphComponent;
 
-
 //lch
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
@@ -295,7 +292,6 @@ import { formatNumber } from '../../Utils/Utils';
 import '../../Styles/Graph.css';
 
 const LCHNotional = () => {
-  const [compareWithTarget, setCompareWithTarget] = useState(false);
   const [selectedCurrencies, setSelectedCurrencies] = useState([
     { value: 'AUD', label: 'AUD' },
     { value: 'EUR', label: 'EUR' },
@@ -303,15 +299,11 @@ const LCHNotional = () => {
     { value: 'JPY', label: 'JPY' },
     { value: 'USD', label: 'USD' },
   ]);
-  const [summary, setSummary] = useState('');
   const [startDate, setStartDate] = useState(new Date('2018-06-01'));
   const [endDate, setEndDate] = useState(new Date('2024-06-25'));
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const latestSummaryRef = useRef('');
-  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -334,22 +326,6 @@ const LCHNotional = () => {
       return date >= startDate.getTime() && date <= endDate.getTime();
     });
   };
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  useEffect(() => {
-    if (loading && data.length > 0) {
-      const updateSummary = () => {
-        if (summary !== latestSummaryRef.current) {
-          setSummary(latestSummaryRef.current);
-        }
-      };
-      const interval = setInterval(updateSummary, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [loading, data, summary]);
 
   const filteredData = getFilteredData();
 
@@ -418,10 +394,6 @@ const LCHNotional = () => {
             selectedCurrencies={selectedCurrencies}
             isDarkMode={isDarkMode}
             data={filteredData}
-            compareWithTarget={compareWithTarget}
-            setCompareWithTarget={setCompareWithTarget}
-            summary={summary}
-            setSummary={setSummary}
           />
         </div>
       </div>
