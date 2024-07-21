@@ -1,4 +1,5 @@
 //graph
+
 import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -168,18 +169,10 @@ const GraphComponent = ({
         setSummary(summaryHTML);
       };
 
-      chart.series.forEach((series) => {
-        series.points.forEach((point) => {
-          point.on('mouseOver', handleMouseOver);
-        });
-      });
+      chart.container.addEventListener('mousemove', handleMouseOver);
 
       return () => {
-        chart.series.forEach((series) => {
-          series.points.forEach((point) => {
-            point.off('mouseOver', handleMouseOver);
-          });
-        });
+        chart.container.removeEventListener('mousemove', handleMouseOver);
       };
     }
   }, [compareWithTarget, selectedCurrencies]);
@@ -286,17 +279,12 @@ const GraphComponent = ({
 export default GraphComponent;
 
 
-
-
-
-
-
 //lch
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
-import GraphComponent from '../../Components/xva/Graph';
+import GraphComponent from '../../Components/xva/GraphComponent';
 import { formatNumber } from '../../Utils/Utils';
 import '../../Styles/Graph.css';
 
@@ -308,14 +296,11 @@ const LCHNotional = () => {
     { value: 'JPY', label: 'JPY' },
     { value: 'USD', label: 'USD' },
   ]);
-  const [summary, setSummary] = useState('');
   const [startDate, setStartDate] = useState(new Date('2018-06-01'));
   const [endDate, setEndDate] = useState(new Date('2024-06-25'));
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const latestSummaryRef = useRef('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -338,22 +323,6 @@ const LCHNotional = () => {
       return date >= startDate.getTime() && date <= endDate.getTime();
     });
   };
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  useEffect(() => {
-    if (loading && data.length > 0) {
-      const updateSummary = () => {
-        if (summary !== latestSummaryRef.current) {
-          setSummary(latestSummaryRef.current);
-        }
-      };
-      const interval = setInterval(updateSummary, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [loading, data, summary]);
 
   const filteredData = getFilteredData();
 
@@ -439,3 +408,4 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
+
