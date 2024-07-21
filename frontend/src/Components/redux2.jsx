@@ -16,6 +16,99 @@ const App = () => (
 
 export default App;
 
+//reducers.js
+
+// src/redux/reducers.js
+
+const initialState = {
+  rows: [],
+  selectedRow: null,
+};
+
+const rootReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'SET_ROWS':
+      return { ...state, rows: action.payload };
+    case 'ADD_ROW':
+      return { ...state, rows: [...state.rows, { ...action.payload, id: state.rows.length }] };
+    case 'UPDATE_ROW':
+      return {
+        ...state,
+        rows: state.rows.map((row) =>
+          row.DatabaseID === action.payload.DatabaseID ? { ...action.payload, id: row.id } : row
+        ),
+      };
+    case 'DELETE_ROW':
+      return {
+        ...state,
+        rows: state.rows.filter((row) => row.DatabaseID !== action.payload),
+      };
+    case 'SET_SELECTED_ROW':
+      return { ...state, selectedRow: action.payload };
+    case 'RESET_SELECTED_ROW':
+      return { ...state, selectedRow: null };
+    default:
+      return state;
+  }
+};
+
+export default rootReducer;
+
+
+//trade blotter new
+
+// src/components/TradeBlotter.jsx
+
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import TradeTable from './TradeTable';
+import TradeForm from './TradeForm';
+import { Box, Button } from '@mui/material';
+import { fetchTrades, addTrade, editTrade, deleteTrade } from '../redux/actions';
+
+const TradeBlotter = () => {
+  const dispatch = useDispatch();
+  const selectedRow = useSelector((state) => state.selectedRow);
+
+  useEffect(() => {
+    dispatch(fetchTrades());
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedRow && selectedRow.DatabaseID) {
+      dispatch(editTrade(selectedRow));
+    } else {
+      dispatch(addTrade(selectedRow));
+    }
+  };
+
+  const handleDelete = async () => {
+    if (selectedRow && selectedRow.DatabaseID) {
+      dispatch(deleteTrade(selectedRow.DatabaseID));
+    }
+  };
+
+  return (
+    <Box display="flex" flexDirection="column" height="100vh" width="100vw">
+      <Box display="flex" flexDirection="row" width="100%" height="calc(100vh - 50px)" paddingTop="20px" marginTop="60px" boxSizing="border-box">
+        <TradeTable />
+        <TradeForm handleSubmit={handleSubmit} handleDelete={handleDelete} />
+      </Box>
+      <Box display="flex" justifyContent="center" alignItems="center" height="50px" position="fixed" bottom="0" width="100%">
+        <Button className={showTable ? 'hideButton' : 'showButton'} onClick={() => setShowTable(!showTable)} style={{ backgroundColor: showTable ? 'white' : 'red', color: showTable ? 'red' : 'white', border: '1px solid red' }}>
+          {showTable ? 'Hide Grid' : 'Show Grid'}
+        </Button>
+        <Button className={showForm ? 'hideButton' : 'showButton'} onClick={() => setShowForm(!showForm)} style={{ backgroundColor: showForm ? 'white' : 'red', color: showForm ? 'red' : 'white', border: '1px solid red' }}>
+          {showForm ? 'Hide Form' : 'Show Form'}
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+export default TradeBlotter;
+
 
 
 import React, { useEffect, useState } from 'react';
