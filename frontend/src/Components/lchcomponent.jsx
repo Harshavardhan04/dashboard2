@@ -1,14 +1,11 @@
-//graph
-
-import React, { useEffect, useRef, useState } from 'react';
+// GraphComponent.jsx
+import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
 import HighchartsExporting from 'highcharts/modules/exporting';
 import HighchartsAnnotations from 'highcharts/modules/annotations';
 import HighchartsMore from 'highcharts/highcharts-more';
-import { Button } from '@mui/material';
-import ChartDownload from '../../Components/xva/ChartDownload';
 import { formatNumber } from '../../Utils/Utils';
 
 HighchartsBoost(Highcharts);
@@ -23,10 +20,11 @@ const GraphComponent = ({
   isDarkMode,
   data,
   compareWithTarget,
-  setCompareWithTarget
+  setCompareWithTarget,
+  summary,
+  setSummary
 }) => {
   const chartRef = useRef(null);
-  const [summary, setSummary] = useState('');
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -82,7 +80,7 @@ const GraphComponent = ({
       boostThreshold: 1,
     };
 
-    return compareWithTarget ? [...compareData, totalLine, target, shadeData] : [...compareData, totalLine];
+    return compareWithTarget ? [...compareData, totalLine, target, shadeData] : [...compareData, totalLine, target];
   };
 
   const getCurrencyColor = (currency) => {
@@ -132,11 +130,6 @@ const GraphComponent = ({
       backgroundColor: isDarkMode ? '#2e2e2e' : '#fafafa',
       plotBorderWidth: 1,
       plotBorderColor: isDarkMode ? '#444444' : '#cccccc',
-      events: {
-        load: function () {
-          this.xAxis[0].setExtremes(startDate.getTime(), endDate.getTime());
-        }
-      }
     },
     title: {
       text: 'LCH Notional | Time Series',
@@ -195,9 +188,13 @@ const GraphComponent = ({
       },
       formatter: function () {
         let s = `<strong>Date:</strong> ${Highcharts.dateFormat('%A, %b %e, %Y', this.x)}<br>`;
-        s += `<strong>Total:</strong> ${Highcharts.numberFormat(this.points.find(p => p.series.name === 'Total').y, 0)}<br>`;
-        s += `<strong>Target:</strong> ${Highcharts.numberFormat(this.points.find(p => p.series.name === 'Target').y, 0)}<br>`;
-        s += `<strong>Difference:</strong> ${Highcharts.numberFormat(this.points.find(p => p.series.name === 'Total').y - this.points.find(p => p.series.name === 'Target').y, 0)}<br>`;
+        const totalPoint = this.points.find(p => p.series.name === 'Total');
+        const targetPoint = this.points.find(p => p.series.name === 'Target');
+        if (totalPoint && targetPoint) {
+          s += `<strong>Total:</strong> ${Highcharts.numberFormat(totalPoint.y, 0)}<br>`;
+          s += `<strong>Target:</strong> ${Highcharts.numberFormat(targetPoint.y, 0)}<br>`;
+          s += `<strong>Difference:</strong> ${Highcharts.numberFormat(totalPoint.y - targetPoint.y, 0)}<br>`;
+        }
         s += '<strong>Breakdown of Selected Currencies:</strong><br>';
 
         this.points.forEach(point => {
@@ -213,33 +210,26 @@ const GraphComponent = ({
   };
 
   return (
-    <div className="graph-section">
-      <div className="graph-buttons">
-        <Button variant="contained" color="primary" onClick={() => setCompareWithTarget(!compareWithTarget)}>
-          {compareWithTarget ? "Disable" : "Enable"} Compare with Target
-        </Button>
+    <>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={chartOptions}
+        ref={chartRef}
+      />
+      <div className="bottom-right-buttons">
+        <button onClick={() => setCompareWithTarget(!compareWithTarget)}>
+          {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
+        </button>
         <ChartDownload chartRef={chartRef} />
       </div>
-      <div className="chart-container">
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={chartOptions}
-          ref={chartRef}
-        />
-      </div>
-      <div className="summary-box">
-        <div className="summary-content" dangerouslySetInnerHTML={{ __html: summary }} />
-      </div>
-    </div>
+    </>
   );
 };
 
 export default GraphComponent;
 
-
-
-//lch2
-import React, { useState, useEffect } from 'react';
+// LCHNotional.jsx
+import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
 import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
@@ -262,6 +252,9 @@ const LCHNotional = () => {
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [summary, setSummary] = useState('');
+
+  const latestSummaryRef = useRef('');
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -373,4 +366,3 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
-
