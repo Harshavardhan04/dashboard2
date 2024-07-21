@@ -1,7 +1,5 @@
 //graph 
-
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -22,12 +20,13 @@ const GraphComponent = ({
   endDate,
   selectedCurrencies,
   isDarkMode,
-  data,
+  data
 }) => {
-  const [compareWithTarget, setCompareWithTarget] = useState(false);
-  const [summary, setSummary] = useState('');
-  const latestSummaryRef = useRef('');
   const chartRef = useRef(null);
+  const [summary, setSummary] = useState('');
+  const [compareWithTarget, setCompareWithTarget] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const latestSummaryRef = useRef('');
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -126,6 +125,50 @@ const GraphComponent = ({
     }
   }, [startDate, endDate, selectedCurrencies, data, isDarkMode]);
 
+  const handleMouseOver = (e) => {
+    const points = e.target.series.chart.hoverPoints || [];
+    let totalValue = null;
+    let targetValue = null;
+
+    points.forEach((point) => {
+      if (point.series.name === 'Total') {
+        totalValue = point.y;
+      } else if (point.series.name === 'Target') {
+        targetValue = point.y;
+      }
+    });
+
+    if (totalValue !== null && targetValue !== null) {
+      const difference = totalValue - targetValue;
+
+      const totalBreakdown = selectedCurrencies.map((currency) => {
+        const point = points.find(p => p.series.name === currency.value);
+        return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
+      }).join('<br>');
+
+      const summaryHTML = `
+        <strong>Total:</strong> ${formatNumber(totalValue)}<br>
+        <strong>Target:</strong> ${formatNumber(targetValue)}<br>
+        <strong>Difference:</strong> ${formatNumber(difference)}<br>
+        <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}
+      `;
+
+      setSummary(summaryHTML);
+      latestSummaryRef.current = summaryHTML;
+    }
+  };
+
+  useEffect(() => {
+    if (chartRef.current) {
+      const chart = chartRef.current.chart;
+      chart.container.addEventListener('mouseover', handleMouseOver);
+
+      return () => {
+        chart.container.removeEventListener('mouseover', handleMouseOver);
+      };
+    }
+  }, [selectedCurrencies]);
+
   const chartOptions = {
     chart: {
       type: 'line',
@@ -133,11 +176,6 @@ const GraphComponent = ({
       backgroundColor: isDarkMode ? '#2e2e2e' : '#fafafa',
       plotBorderWidth: 1,
       plotBorderColor: isDarkMode ? '#444444' : '#cccccc',
-      events: {
-        load: function () {
-          this.xAxis[0].setExtremes(startDate.getTime(), endDate.getTime());
-        }
-      }
     },
     title: {
       text: 'LCH Notional | Time Series',
@@ -196,40 +234,40 @@ const GraphComponent = ({
       },
       formatter: function () {
         const points = this.points;
-        let targetValue = null;
         let totalValue = null;
-        let summaryHTML = '';
+        let targetValue = null;
 
         points.forEach((point) => {
-          if (point.series.name === 'Target') {
-            targetValue = point.y;
-          } else if (point.series.name === 'Total') {
+          if (point.series.name === 'Total') {
             totalValue = point.y;
+          } else if (point.series.name === 'Target') {
+            targetValue = point.y;
           }
         });
 
-        if (targetValue != null && totalValue != null) {
+        if (totalValue !== null && targetValue !== null) {
           const difference = totalValue - targetValue;
-          const totalBreakdown = selectedCurrencies
-            .map((currency) => {
-              const point = points.find((p) => p.series.name === currency.value);
-              return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
-            })
-            .join('<br>');
 
-          summaryHTML = `<strong>Total:</strong> ${formatNumber(totalValue)}<br>
+          const totalBreakdown = selectedCurrencies.map((currency) => {
+            const point = points.find(p => p.series.name === currency.value);
+            return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
+          }).join('<br>');
+
+          const summaryHTML = `
+            <strong>Total:</strong> ${formatNumber(totalValue)}<br>
             <strong>Target:</strong> ${formatNumber(targetValue)}<br>
             <strong>Difference:</strong> ${formatNumber(difference)}<br>
-            <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}`;
+            <strong>Breakdown of Selected Currencies:</strong><br>${totalBreakdown}
+          `;
 
-          latestSummaryRef.current = summaryHTML;
           setSummary(summaryHTML);
+          latestSummaryRef.current = summaryHTML;
         }
 
-        return points.reduce((s, point) => {
-          return s + `<br><span style="color:${point.series.color}">${point.series.name}</span>: <b>${Highcharts.dateFormat('%A, %b %e, %Y', this.x)}</b>: ${formatNumber(point.y)}`;
+        return this.points.reduce((s, point) => {
+          return s + `<br/><span style="color:${point.series.color}">\u25CF</span> ${point.series.name}: <b>${formatNumber(point.y)}</b>`;
         }, '');
-      },
+      }
     },
     series: getData(),
   };
@@ -243,21 +281,7 @@ const GraphComponent = ({
       />
       {compareWithTarget && (
         <div className="summary-box">
-          <div className="summary-content">
-            <span>
-              <strong>Total:</strong> {summary && parseFloat(summary.split("Total: ")[1].split("<br>")[0])}
-            </span>
-            <span>
-              <strong>Target:</strong> {summary && parseFloat(summary.split("Target: ")[1].split("<br>")[0])}
-            </span>
-            <span>
-              <strong>Difference:</strong> {summary && parseFloat(summary.split("Difference: ")[1].split("<br>")[0])}
-            </span>
-            <span>
-              <strong>Breakdown of Selected Currencies:</strong>
-              <div dangerouslySetInnerHTML={{ __html: summary && summary.split("<br><br>")[1] }} />
-            </span>
-          </div>
+          <div className="summary-content" dangerouslySetInnerHTML={{ __html: summary }} />
         </div>
       )}
       <div className="bottom-right-buttons">
@@ -268,7 +292,7 @@ const GraphComponent = ({
             marginTop: "0.25vh",
             width: "10vw",
             maxHeight: "lg",
-            "&:hover": { backgroundColor: "#da5d5d" },
+            '&:hover': { backgroundColor: "#da5d5d" },
           }}
           onClick={() => setCompareWithTarget(!compareWithTarget)}
         >
@@ -281,6 +305,7 @@ const GraphComponent = ({
 };
 
 export default GraphComponent;
+
 
 //lch
 import React, { useState, useEffect, useRef } from 'react';
