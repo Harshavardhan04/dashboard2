@@ -1,11 +1,13 @@
 //graph 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
 import HighchartsExporting from 'highcharts/modules/exporting';
 import HighchartsAnnotations from 'highcharts/modules/annotations';
 import HighchartsMore from 'highcharts/highcharts-more';
+import { Button } from '@mui/material';
+import ChartDownload from '../../Components/xva/ChartDownload';
 import { formatNumber } from '../../Utils/Utils';
 
 HighchartsBoost(Highcharts);
@@ -19,9 +21,11 @@ const GraphComponent = ({
   selectedCurrencies,
   isDarkMode,
   data,
-  compareWithTarget
+  compareWithTarget,
+  setSummary
 }) => {
   const chartRef = useRef(null);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const getFilteredData = () => {
     return data.filter((d) => {
@@ -207,18 +211,55 @@ const GraphComponent = ({
     series: getData(),
   };
 
+  const handleMouseOver = (e) => {
+    if (chartRef.current) {
+      const chart = chartRef.current.chart;
+      const point = chart.series[0].searchPoint(e, true);
+
+      if (point) {
+        const date = Highcharts.dateFormat('%A, %b %e, %Y', point.x);
+        const total = Highcharts.numberFormat(chart.series.find(s => s.name === 'Total').data.find(d => d.x === point.x).y, 0);
+        const target = Highcharts.numberFormat(chart.series.find(s => s.name === 'Target').data.find(d => d.x === point.x).y, 0);
+        const difference = Highcharts.numberFormat(total - target, 0);
+
+        let breakdown = '';
+        chart.series.forEach(series => {
+          if (series.name !== 'Total' && series.name !== 'Target') {
+            const value = Highcharts.numberFormat(series.data.find(d => d.x === point.x).y, 0);
+            breakdown += `<strong>${series.name}:</strong> ${value}<br>`;
+          }
+        });
+
+        const summaryHTML = `<strong>Date:</strong> ${date}<br><strong>Total:</strong> ${total}<br><strong>Target:</strong> ${target}<br><strong>Difference:</strong> ${difference}<br><strong>Breakdown of Selected Currencies:</strong><br>${breakdown}`;
+        setSummary(summaryHTML);
+      }
+    }
+  };
+
   return (
-    <div className="chart-container">
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={chartOptions}
-        ref={chartRef}
-      />
+    <div className="graph-section">
+      <div className="graph-buttons">
+        <Button variant="contained" color="primary" onClick={() => setCompareWithTarget(!compareWithTarget)}>
+          {compareWithTarget ? "Disable" : "Enable"} Compare with Target
+        </Button>
+        <ChartDownload chartRef={chartRef} />
+      </div>
+      <div className="chart-container" onMouseMove={handleMouseOver}>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={chartOptions}
+          ref={chartRef}
+        />
+      </div>
+      <div className="summary-box">
+        <div className="summary-content" dangerouslySetInnerHTML={{ __html: summary }} />
+      </div>
     </div>
   );
 };
 
 export default GraphComponent;
+
 
 
 
@@ -229,8 +270,6 @@ import DateSelectors from '../../Components/generic/DateSelectors';
 import Table from '../../Components/generic/GenericTable';
 import GraphComponent from '../../Components/xva/GraphComponent';
 import { formatNumber } from '../../Utils/Utils';
-import { Button } from '@mui/material';
-import ChartDownload from '../../Components/xva/ChartDownload';
 import '../../Styles/Graph.css';
 
 const LCHNotional = () => {
@@ -242,15 +281,12 @@ const LCHNotional = () => {
     { value: 'JPY', label: 'JPY' },
     { value: 'USD', label: 'USD' },
   ]);
-  const [summary, setSummary] = useState('');
   const [startDate, setStartDate] = useState(new Date('2018-06-01'));
   const [endDate, setEndDate] = useState(new Date('2024-06-25'));
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const latestSummaryRef = useRef('');
-  const chartRef = useRef(null);
+  const [summary, setSummary] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -273,22 +309,6 @@ const LCHNotional = () => {
       return date >= startDate.getTime() && date <= endDate.getTime();
     });
   };
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  useEffect(() => {
-    if (loading && data.length > 0) {
-      const updateSummary = () => {
-        if (summary !== latestSummaryRef.current) {
-          setSummary(latestSummaryRef.current);
-        }
-      };
-      const interval = setInterval(updateSummary, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [loading, data, summary]);
 
   const filteredData = getFilteredData();
 
@@ -358,31 +378,8 @@ const LCHNotional = () => {
             isDarkMode={isDarkMode}
             data={filteredData}
             compareWithTarget={compareWithTarget}
+            setSummary={setSummary}
           />
-          {compareWithTarget && (
-            <div className="summary-box">
-              <div className="summary-content">
-                <span>
-                  <strong>Total:</strong> {summary && parseFloat(summary.split("<strong>Total:</strong> ")[1].split("<br>")[0])}
-                </span>
-                <span>
-                  <strong>Target:</strong> {summary && parseFloat(summary.split("<strong>Target:</strong> ")[1].split("<br>")[0])}
-                </span>
-                <span>
-                  <strong>Difference:</strong> {summary && parseFloat(summary.split("<strong>Difference:</strong> ")[1].split("<br>")[0])}
-                </span>
-                <span>
-                  <strong>Breakdown of Selected Currencies:</strong>
-                  {showBreakdown && (
-                    <div dangerouslySetInnerHTML={{ __html: summary && summary.split("<br><br>")[1] }} />
-                  )}
-                </span>
-                <span className="dropdown-arrow" onClick={() => setShowBreakdown(!showBreakdown)}>
-                  {showBreakdown ? "▲" : "▼"}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -393,22 +390,6 @@ const LCHNotional = () => {
             <Table rows={rows} columns={columns} loading={loading} />
           </div>
         </div>
-      </div>
-      <div className="bottom-right-buttons">
-        <Button
-          sx={{
-            backgroundColor: "#AE1A1A",
-            color: "#FFF",
-            marginTop: "0.25vh",
-            width: "10vw",
-            maxHeight: "lg",
-            "&:hover": { backgroundColor: "#da5d5d" },
-          }}
-          onClick={() => setCompareWithTarget(!compareWithTarget)}
-        >
-          {compareWithTarget ? "Disable Target Comparison" : "Enable Target Comparison"}
-        </Button>
-        <ChartDownload chartRef={chartRef} />
       </div>
     </>
   );
