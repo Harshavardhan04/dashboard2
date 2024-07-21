@@ -481,3 +481,63 @@ if (targetValue != null && totalValue != null) {
     </div>
   </div>
 )}
+
+
+
+//new
+
+if (targetValue != null && totalValue != null) {
+  const difference = totalValue - targetValue;
+  const totalBreakdown = selectedCurrencies
+    .map((currency) => {
+      const point = points.find((p) => p.series.name === currency.value);
+      return `<strong>${currency.value}:</strong> ${point ? formatNumber(point.y) : 'N/A'}`;
+    })
+    .join('<br>');
+
+  summaryHTML = `
+    Total: ${formatNumber(totalValue)}<br>
+    Target: ${formatNumber(targetValue)}<br>
+    Difference: ${formatNumber(difference)}<br>
+    Breakdown of Selected Currencies:<br>${totalBreakdown}
+  `;
+
+  latestSummaryRef.current = summaryHTML;
+  console.log("summary html is ", summaryHTML);
+  setSummary(summaryHTML);
+  console.log(summary);
+}
+
+
+const [showBreakdown, setShowBreakdown] = useState(false);
+
+{compareWithTarget && (
+  <div className="summary-box">
+    <div className="summary-content">
+      <span>
+        <strong>Total:</strong> {summary && summary.match(/Total: ([\d,]+)/)?.[1]}
+      </span>
+      <span>
+        <strong>Target:</strong> {summary && summary.match(/Target: ([\d,]+)/)?.[1]}
+      </span>
+      <span>
+        <strong>Difference:</strong> {summary && summary.match(/Difference: ([\d,-]+)/)?.[1]}
+      </span>
+      <span>
+        <strong>Breakdown of Selected Currencies:</strong>
+        <span 
+          className="dropdown-arrow" 
+          onClick={() => setShowBreakdown(!showBreakdown)}
+          title={showBreakdown ? 'Hide currency breakdown' : 'Show currency breakdown'}
+          style={{ cursor: 'pointer' }}
+        >
+          &#9660;
+        </span>
+        {showBreakdown && (
+          <div dangerouslySetInnerHTML={{ __html: summary && summary.split('Breakdown of Selected Currencies:<br>')[1] }} />
+        )}
+      </span>
+    </div>
+  </div>
+)}
+
