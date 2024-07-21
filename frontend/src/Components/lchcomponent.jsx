@@ -1,4 +1,4 @@
-//graph 
+//graph
 
 import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
@@ -234,39 +234,43 @@ const GraphComponent = ({
 
   return (
     <>
-      <div className="chart-container" onMouseOver={(e) => {
-        if (e.target.closest('.highcharts-point') && chartRef.current) {
-          const chart = chartRef.current.chart;
-          const point = chart.hoverPoint;
-          if (point) {
-            chart.tooltip.refresh(point);
-          }
-        }
-      }}>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={chartOptions}
-          ref={chartRef}
-        />
-      </div>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={chartOptions}
+        ref={chartRef}
+      />
       {compareWithTarget && (
         <div className="summary-box">
-          <div className="summary-content" dangerouslySetInnerHTML={{ __html: latestSummaryRef.current }} />
+          <div className="summary-content">
+            <span>
+              <strong>Total:</strong> {formatNumber(parseFloat(summary.split("Total: ")[1].split("<br>")[0]))}
+            </span>
+            <span>
+              <strong>Target:</strong> {formatNumber(parseFloat(summary.split("Target: ")[1].split("<br>")[0]))}
+            </span>
+            <span>
+              <strong>Difference:</strong> {formatNumber(parseFloat(summary.split("Difference: ")[1].split("<br>")[0]))}
+            </span>
+            <span>
+              <strong>Breakdown of Selected Currencies:</strong>
+              <div dangerouslySetInnerHTML={{ __html: summary.split("<br><br>")[1] }} />
+            </span>
+          </div>
         </div>
       )}
       <div className="bottom-right-buttons">
         <Button
           sx={{
-            backgroundColor: '#AE1A1A',
-            color: '#FFF',
-            marginTop: '0.25vh',
-            width: '10vw',
-            maxHeight: 'lg',
-            '&:hover': { backgroundColor: '#da5d5d' },
+            backgroundColor: "#AE1A1A",
+            color: "#FFF",
+            marginTop: "0.25vh",
+            width: "10vw",
+            maxHeight: "lg",
+            "&:hover": { backgroundColor: "#da5d5d" },
           }}
           onClick={() => setCompareWithTarget(!compareWithTarget)}
         >
-          {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
+          {compareWithTarget ? "Disable Target Comparison" : "Enable Target Comparison"}
         </Button>
         <ChartDownload chartRef={chartRef} />
       </div>
@@ -277,8 +281,7 @@ const GraphComponent = ({
 export default GraphComponent;
 
 
-
-//lch page
+//lch
 
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
@@ -414,6 +417,8 @@ const LCHNotional = () => {
             data={filteredData}
             compareWithTarget={compareWithTarget}
             setCompareWithTarget={setCompareWithTarget}
+            summary={summary}
+            setSummary={setSummary}
           />
         </div>
       </div>
