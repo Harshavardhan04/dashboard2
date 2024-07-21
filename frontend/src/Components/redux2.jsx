@@ -1,3 +1,23 @@
+import { configureStore } from '@reduxjs/toolkit';
+import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+import rootReducer from './reducers';
+
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: [thunk],
+});
+
+const App = () => (
+  <Provider store={store}>
+    <TradeBlotter />
+  </Provider>
+);
+
+export default App;
+
+
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import TradeTable from '../components/TradeTable';
