@@ -1,5 +1,5 @@
 //graph
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -7,6 +7,7 @@ import HighchartsExporting from 'highcharts/modules/exporting';
 import HighchartsAnnotations from 'highcharts/modules/annotations';
 import HighchartsMore from 'highcharts/highcharts-more';
 import { formatNumber } from '../../Utils/Utils';
+import { Button } from '@mui/material';
 
 HighchartsBoost(Highcharts);
 HighchartsExporting(Highcharts);
@@ -19,9 +20,9 @@ const GraphComponent = ({
   selectedCurrencies,
   isDarkMode,
   data,
-  compareWithTarget,
-  setSummary
 }) => {
+  const [compareWithTarget, setCompareWithTarget] = useState(false);
+  const [summary, setSummary] = useState('');
   const chartRef = useRef(null);
   const latestSummaryRef = useRef('');
 
@@ -180,7 +181,7 @@ const GraphComponent = ({
         });
       };
     }
-  }, [compareWithTarget, selectedCurrencies, setSummary]);
+  }, [compareWithTarget, selectedCurrencies]);
 
   const chartOptions = {
     chart: {
@@ -250,11 +251,34 @@ const GraphComponent = ({
   };
 
   return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      options={chartOptions}
-      ref={chartRef}
-    />
+    <div>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={chartOptions}
+        ref={chartRef}
+      />
+      {compareWithTarget && (
+        <div className="summary-box">
+          <div className="summary-content" dangerouslySetInnerHTML={{ __html: summary }} />
+        </div>
+      )}
+      <div className="bottom-right-buttons">
+        <Button
+          sx={{
+            backgroundColor: '#AE1A1A',
+            color: '#fff',
+            marginTop: '0.25vh',
+            width: '10vw',
+            maxHeight: 'lg',
+            '&:hover': { backgroundColor: '#da5d5d' }
+          }}
+          onClick={() => setCompareWithTarget(!compareWithTarget)}
+        >
+          {compareWithTarget ? 'Disable Target Comparison' : 'Enable Target Comparison'}
+        </Button>
+        <ChartDownload chartRef={chartRef} />
+      </div>
+    </div>
   );
 };
 
