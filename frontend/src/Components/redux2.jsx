@@ -1,3 +1,205 @@
+//trade blotter new 2nd
+
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import TradeTable from './TradeTable';
+import TradeForm from './TradeForm';
+import { Box, Button } from '@mui/material';
+import { fetchTrades, addTrade, editTrade, deleteTrade } from '../redux/actions';
+import { styled } from '@mui/system';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
+const ContainerStyled = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  height: '100vh',
+  alignItems: 'flex-start',
+  paddingTop: '20px',
+  marginTop: '60px',
+  boxSizing: 'border-box',
+});
+
+const TableContainer = styled(Box)({
+  flex: '7',
+  height: 'calc(100vh - 100px)',
+  overflow: 'auto',
+  paddingRight: '10px',
+  boxSizing: 'border-box',
+});
+
+const FormContainer = styled(Box)({
+  flex: '3',
+  height: 'calc(100vh - 100px)',
+  overflow: 'auto',
+  padding: '16px',
+  boxSizing: 'border-box',
+});
+
+const FooterContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '50px',
+  position: 'fixed',
+  bottom: '0',
+  width: '100%',
+});
+
+const ShowButton = styled(Button)({
+  backgroundColor: 'red',
+  color: 'white',
+  border: '1px solid red',
+  '&:hover': {
+    backgroundColor: 'darkred',
+  },
+});
+
+const HideButton = styled(Button)({
+  backgroundColor: 'white',
+  color: 'red',
+  border: '1px solid red',
+  '&:hover': {
+    backgroundColor: 'lightgray',
+  },
+});
+
+const TradeBlotter = () => {
+  const dispatch = useDispatch();
+  const selectedRow = useSelector((state) => state.selectedRow);
+  const [showTable, setShowTable] = useState(true);
+  const [showForm, setShowForm] = useState(true);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchTrades());
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedRow && selectedRow.DatabaseID) {
+      dispatch(editTrade(selectedRow));
+    } else {
+      dispatch(addTrade(selectedRow));
+    }
+  };
+
+  const handleDelete = async () => {
+    if (selectedRow && selectedRow.DatabaseID) {
+      dispatch(deleteTrade(selectedRow.DatabaseID));
+    }
+  };
+
+  const handleOpenEditDialog = () => {
+    setOpenEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+  };
+
+  const handleOpenDeleteDialog = () => {
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+  };
+
+  return (
+    <ContainerStyled>
+      {showTable && (
+        <TableContainer>
+          <TradeTable />
+        </TableContainer>
+      )}
+      {showForm && (
+        <FormContainer>
+          <TradeForm
+            handleSubmit={handleSubmit}
+            handleOpenDeleteDialog={handleOpenDeleteDialog}
+            handleCloseEditDialog={handleCloseEditDialog}
+          />
+        </FormContainer>
+      )}
+      <FooterContainer>
+        <Button
+          className={showTable ? 'hideButton' : 'showButton'}
+          onClick={() => setShowTable(!showTable)}
+          style={{
+            backgroundColor: showTable ? 'white' : 'red',
+            color: showTable ? 'red' : 'white',
+            border: '1px solid red',
+          }}
+        >
+          {showTable ? 'Hide Grid' : 'Show Grid'}
+        </Button>
+        <Button
+          className={showForm ? 'hideButton' : 'showButton'}
+          onClick={() => setShowForm(!showForm)}
+          style={{
+            backgroundColor: showForm ? 'white' : 'red',
+            color: showForm ? 'red' : 'white',
+            border: '1px solid red',
+          }}
+        >
+          {showForm ? 'Hide Form' : 'Show Form'}
+        </Button>
+      </FooterContainer>
+      <Dialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        aria-labelledby="edit-dialog-title"
+        aria-describedby="edit-dialog-description"
+      >
+        <DialogTitle id="edit-dialog-title">{"Confirm Edit"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="edit-dialog-description">
+            Are you sure you want to edit this entry?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEditDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">{"Confirm Delete"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this entry?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </ContainerStyled>
+  );
+};
+
+export default TradeBlotter;
+
+
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
