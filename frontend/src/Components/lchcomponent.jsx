@@ -1,5 +1,5 @@
 //graph
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import HighchartsBoost from 'highcharts/modules/boost';
@@ -260,6 +260,7 @@ export default GraphComponent;
 
 
 
+
 //lch
 import React, { useState, useEffect, useRef } from 'react';
 import CurrencySelector from '../../Components/xva/CurrencySelector';
@@ -402,9 +403,7 @@ const LCHNotional = () => {
         {compareWithTarget && (
           <div className="summary-box">
             <div className="summary-content">
-              <div>Total: {summary.total}</div>
-              <div>Target: {summary.target}</div>
-              <div>Difference: {summary.difference}</div>
+              <div dangerouslySetInnerHTML={{ __html: summary }} />
             </div>
           </div>
         )}
@@ -439,4 +438,3 @@ const LCHNotional = () => {
 };
 
 export default LCHNotional;
-
