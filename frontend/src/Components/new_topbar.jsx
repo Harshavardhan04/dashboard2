@@ -37,15 +37,20 @@ export default Topbar;
 
 
 //app.jsx
-
 import React from 'react';
-import { Provider, useSelector } from 'react-redux';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline, createTheme } from '@mui/material/styles';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import store from './redux/store';
+import CustomSidebar from './Components/generic/Sidebar';
 import Topbar from './Components/generic/Topbar';
-import LCHNotional from './Components/xva/LCHNotional';
+import TradeBlotter from './Pages/fva/TradeBlotter';
+import CarryViewer from './Pages/xva/CarryViewer';
+import LCHNotional from './Pages/xva/LCHNotional';
+import UnmanagedSecured from './Pages/fva/UnmanagedSecured';
+import './App.css';
 
-const App = () => {
+function App() {
   const isDarkMode = useSelector((state) => state.isDarkMode);
 
   const lightTheme = createTheme({
@@ -76,11 +81,24 @@ const App = () => {
     <Provider store={store}>
       <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
         <CssBaseline />
-        <Topbar />
-        <LCHNotional />
+        <Router basename={BASE_PATH}>
+          <div className="App">
+            <Topbar />
+            <CustomSidebar />
+            <div className="main-content">
+              <Routes>
+                <Route path="/" element={<Navigate to="/xva/lch_notional" />} />
+                <Route path="/xva/lch_notional" element={<LCHNotional />} />
+                <Route path="/fva/remrsk_unsecured" element={<UnmanagedSecured />} />
+                <Route path="/fva/trade_blotter" element={<TradeBlotter />} />
+                <Route path="/xva/carry_viewer" element={<CarryViewer />} />
+              </Routes>
+            </div>
+          </div>
+        </Router>
       </ThemeProvider>
     </Provider>
   );
-};
+}
 
 export default App;
