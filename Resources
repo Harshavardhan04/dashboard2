@@ -1,0 +1,27 @@
+Background reading material:
+ 
+Superforecasting and selected Papers
+Book: "Superforecasting: The Art and Science of Prediction" Dan Gardner and Philip Tetlock (2016)
+Paper: "Crowd Prediction Systems: Markets, Polls, and Elite Forecasters" Pavel D. Atanasov, Jens Witkowski, Barbara Mellers, Philip Tetlock (2024)
+Paper: "Distilling the Wisdom of Crowds: Prediction Markets versus Prediction Polls" Pavel D. Atanasov, et al. (2015)
+Paper: "AI-Augmented Predictions: LLM Assistants Improve Human Forecasting Accuracy" Philipp Schoenegger et al. (2024)
+Paper: "Analysts Are Good at Ranking Stocks" Adam Farago, Erik Hjalmarsson, Ming Zeng (2023)
+ 
+Financial Machine Learning and AI
+- Publications of Marcos Lopez de Prado i.e. his book "Advances in Financial Machine Learning"
+- Publications of Bryan Kelly https://www.bryankellyacademic.org/
+ 
+Basics of Factorinvesting and selected Papers dealing with the "factor zoo" (here things regarding analyst sentiment and alternative signals from news are probably most helpful)
+- https://www.gsam.com/content/gsam/dk/en/advisers/market-insights/gsam-insights/quantinomics/equity-factor-investing-101.html
+ 
+Paper: "Factor Zoo (.zip)" Alexander Swade, Matthias X. Hanauer, Harald Lohre, David Blitz (2023)
+Paper: "A Census of the Factor Zoo" Campbell R. Harvey, Yan Liu (2019)
+Paper: "Taming the Factor Zoo" Guanhao Feng, Stefano Giglio, Dacheng Xiu (2019)
+Paper: "Alice’s Adventures in Factorland: Three Blunders That Plague Factor Investing" Robert D. Arnott, Campbell R. Harvey, Vitali Kalesnik, Juhani T. Linnainmaa (2019)
+ 
+Natural Language Processing for financial applications
+- Loughran-McDonald Master Dictionary w/ Sentiment Word Lists
+- Entity recognition and fine-grained entity recognition are also models you could look into as well as knowledge graphs
+ 
+Paper: "FinBERT - A Large Language Model for Extracting Information from Financial Text" Allen H. Huang, Hui Wang, Yi Yang (2020)
+Paper:  “Can ChatGPT Forecast Stock Price Movements? Return Predictability and Large Language Models” Alejandro Lopez-Lira, Yuehua Tang (2023)
